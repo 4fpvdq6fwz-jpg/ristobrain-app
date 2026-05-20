@@ -10,6 +10,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --omit=dev
 COPY --from=builder /app/dist ./dist
+# Copy SQL files needed for migrations
+COPY --from=builder /app/src/db ./dist/db
 EXPOSE 4000
 ENV NODE_ENV=production
 CMD ["npm", "start"]

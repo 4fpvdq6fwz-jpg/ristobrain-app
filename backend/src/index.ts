@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { config } from './config';
 import { errorHandler, notFound } from './middleware/errorHandler';
+import { runMigrations } from './migrate';
 
 import authRouter from './routes/auth';
 import ingredientsRouter from './routes/ingredients';
@@ -45,9 +46,20 @@ app.use('/api/ai', aiRouter);
 app.use(notFound);
 app.use(errorHandler);
 
-app.listen(config.port, () => {
-  console.log(`🍽️  RistoBrain API running on port ${config.port} [${config.nodeEnv}]`);
-  console.log(`📊 Health check: http://localhost:${config.port}/health`);
-});
+async function startServer() {
+  // Run DB migrations before starting server
+  try {
+    await runMigrations();
+  } catch (err) {
+    console.error('Failed to run migrations, continuing anyway...', err);
+  }
+
+  app.listen(config.port, () => {
+    console.log(`🍽️  RistoBrain API running on port ${config.port} [${config.nodeEnv}]`);
+    console.log(`📊 Health check: http://localhost:${config.port}/health`);
+  });
+}
+
+startServer();
 
 export default app;
