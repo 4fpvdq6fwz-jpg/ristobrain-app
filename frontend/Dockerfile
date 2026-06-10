@@ -3,6 +3,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+RUN mkdir -p /app/public
 # BACKEND_URL sarà iniettata da Railway come ARG durante il build
 ARG BACKEND_URL=http://localhost:4000
 ENV BACKEND_URL=${BACKEND_URL}
