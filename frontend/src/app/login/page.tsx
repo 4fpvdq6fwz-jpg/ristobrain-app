@@ -1,13 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api';
 import { setAuth } from '@/lib/auth';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [tab, setTab] = useState<'login' | 'register'>('login');
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
@@ -28,7 +26,7 @@ export default function LoginPage() {
       const res = await authApi.login(form.email, form.password);
       setAuth({ token: res.data.token, user: res.data.user, workspace: res.data.workspace });
       toast.success('Benvenuto!');
-      router.push('/dashboard');
+      window.location.href = '/dashboard';
     } catch (err: any) {
       toast.error(err.response?.data?.error || 'Credenziali non valide');
     } finally {
@@ -48,7 +46,7 @@ export default function LoginPage() {
       });
       setAuth({ token: res.data.token, user: res.data.user, workspace: res.data.workspace });
       toast.success('Account creato! Benvenuto!');
-      router.push('/dashboard');
+      window.location.href = '/dashboard';
     } catch (err: any) {
       toast.error(err.response?.data?.error || 'Errore nella registrazione');
     } finally {
