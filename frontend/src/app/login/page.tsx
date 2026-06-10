@@ -9,8 +9,10 @@ export default function LoginPage() {
   const [tab, setTab] = useState<'login' | 'register'>('login');
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
-    email: 'chef@demo.it',
-    password: 'demo1234',
+    email: '',
+    password: '',
+    confirmEmail: '',
+    confirmPassword: '',
     fullName: '',
     workspaceName: '',
   });
@@ -36,6 +38,16 @@ export default function LoginPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (form.email !== form.confirmEmail) {
+      toast.error('Le email inserite non coincidono');
+      return;
+    }
+    if (form.password !== form.confirmPassword) {
+      toast.error('Le password inserite non coincidono');
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await authApi.register({
@@ -103,9 +115,6 @@ export default function LoginPage() {
               <button type="submit" disabled={loading} className="btn-primary w-full mt-2">
                 {loading ? 'Accesso...' : 'Accedi'}
               </button>
-              <p className="text-center text-xs text-dark-300 mt-3">
-                Demo: chef@demo.it / demo1234
-              </p>
             </form>
           ) : (
             <form onSubmit={handleRegister} className="space-y-4">
@@ -120,9 +129,19 @@ export default function LoginPage() {
                   className="input-dark" placeholder="mario@ristorante.it" required />
               </div>
               <div>
+                <label className="text-sm text-dark-200 block mb-1">Conferma Email</label>
+                <input name="confirmEmail" type="email" value={form.confirmEmail} onChange={handleChange}
+                  className="input-dark" placeholder="Ripeti l'indirizzo email" required />
+              </div>
+              <div>
                 <label className="text-sm text-dark-200 block mb-1">Password</label>
                 <input name="password" type="password" value={form.password} onChange={handleChange}
                   className="input-dark" placeholder="min. 8 caratteri" required />
+              </div>
+              <div>
+                <label className="text-sm text-dark-200 block mb-1">Conferma Password</label>
+                <input name="confirmPassword" type="password" value={form.confirmPassword} onChange={handleChange}
+                  className="input-dark" placeholder="Ripeti la password" required />
               </div>
               <div>
                 <label className="text-sm text-dark-200 block mb-1">Nome ristorante</label>
