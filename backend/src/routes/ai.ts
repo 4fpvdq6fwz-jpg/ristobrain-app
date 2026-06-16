@@ -22,7 +22,7 @@ router.get('/knowledge', authenticate, async (req: Request, res: Response) => {
 router.post('/knowledge', authenticate, async (req: Request, res: Response) => {
   try {
     const wsId = req.user!.workspaceId;
-    const userId = req.user!.id;
+    const userId = req.user!.userId;
     const { title, content, source_type = 'manual' } = req.body;
     if (!title || !content) return res.status(400).json({ error: 'Titolo e contenuto obbligatori' });
     const rows = await query<any>(
