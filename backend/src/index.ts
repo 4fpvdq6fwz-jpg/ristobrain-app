@@ -13,6 +13,7 @@ import salesRouter from './routes/sales';
 import calculationsRouter from './routes/calculations';
 import locationsRouter from './routes/locations';
 import suppliersRouter from './routes/suppliers';
+// AI consultant + knowledge base routes
 import aiRouter from './routes/ai';
 
 const app = express();
@@ -55,7 +56,7 @@ async function startServer() {
   }
 
   app.listen(config.port, () => {
-    console.log(`🍽️  RistoBrain API running on port ${config.port} [${config.nodeEnv}]`);
+    console.log(`🍽️ RistoBrain API running on port ${config.port} [${config.nodeEnv}]`);
     console.log(`📊 Health check: http://localhost:${config.port}/health`);
   });
 }
