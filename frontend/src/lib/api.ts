@@ -3,8 +3,8 @@ import axios from 'axios';
 // In produzione il Next.js proxy (next.config.js rewrites) instrada /api/* → backend
 // In sviluppo locale con Docker usa lo stesso meccanismo
 const BASE_URL = typeof window !== 'undefined'
-  ? '/api'  // client-side: usa il proxy Next.js
-  : (process.env.BACKEND_URL || 'http://localhost:4000') + '/api';  // server-side SSR
+  ? '/api' // client-side: usa il proxy Next.js
+  : (process.env.BACKEND_URL || 'http://localhost:4000') + '/api'; // server-side SSR
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -105,4 +105,13 @@ export const suppliersApi = {
   list: () => api.get('/suppliers'),
   create: (data: any) => api.post('/suppliers', data),
   update: (id: string, data: any) => api.put(`/suppliers/${id}`, data),
+};
+
+// AI Consultant
+export const aiApi = {
+  suggest: (question: string) => api.post('/ai/suggest', { question }),
+  listKnowledge: () => api.get('/ai/knowledge'),
+  addKnowledge: (data: { title: string; content: string; source_type?: string }) =>
+    api.post('/ai/knowledge', data),
+  deleteKnowledge: (id: string) => api.delete(`/ai/knowledge/${id}`),
 };
