@@ -12,7 +12,7 @@ export async function runMigrations(): Promise<void> {
       SELECT COUNT(*) as count
       FROM information_schema.tables
       WHERE table_schema = 'public'
-        AND table_name = 'users'
+      AND table_name = 'users'
     `);
 
     const tablesExist = parseInt(res.rows[0].count) > 0;
@@ -31,11 +31,28 @@ export async function runMigrations(): Promise<void> {
         const seedSql = fs.readFileSync(seedPath, 'utf-8');
         await client.query(seedSql);
         console.log('✅ Demo data loaded');
-        console.log('   📧 Login: chef@demo.it / demo1234');
+        console.log('  📧 Login: chef@demo.it / demo1234');
       }
     } else {
-      console.log('✅ Database already initialized, skipping migrations');
+      console.log('✅ Database already initialized, skipping base migrations');
     }
+
+    // Incremental migrations — always run (idempotent via IF NOT EXISTS)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS ai_knowledge_base (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        source_type TEXT NOT NULL DEFAULT 'manual',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_by UUID REFERENCES users(id)
+      )
+    `);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_ai_knowledge_workspace ON ai_knowledge_base (workspace_id)`);
+    console.log('✅ AI knowledge base ready');
+
   } catch (err) {
     console.error('❌ Migration failed:', err);
     throw err;
