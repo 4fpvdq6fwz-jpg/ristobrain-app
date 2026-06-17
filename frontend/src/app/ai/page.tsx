@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { aiApi } from '@/lib/api';
 import toast from 'react-hot-toast';
+import { getAuth } from '@/lib/auth';
 
 const SUGGERIMENTI = [
   'Come posso abbassare il food cost?',
@@ -19,6 +20,7 @@ export default function AiPage() {
   const [risposta, setRisposta] = useState('');
   const [loadingChat, setLoadingChat] = useState(false);
   const [source, setSource] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const [knowledge, setKnowledge] = useState<any[]>([]);
   const [loadingKb, setLoadingKb] = useState(true);
@@ -27,7 +29,13 @@ export default function AiPage() {
   const [newContent, setNewContent] = useState('');
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { loadKnowledge(); }, []);
+  useEffect(() => {
+    const auth = getAuth();
+    const role = auth?.workspace?.role;
+    const admin = role === 'admin' || role === 'owner';
+    setIsAdmin(admin);
+    if (admin) loadKnowledge();
+  }, []);
 
   const loadKnowledge = async () => {
     try {
@@ -93,13 +101,12 @@ export default function AiPage() {
           <h1 className="text-2xl font-bold text-white">🤖 Consulente AI</h1>
           <p className="text-dark-200 text-sm mt-1">
             Consigli personalizzati basati sui tuoi dati reali
-            {knowledge.length > 0 && ` · ${knowledge.length} materiali di consulenza caricati`}
-          </p>
+          </p>  
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className={`grid grid-cols-1 ${isAdmin ? 'lg:grid-cols-3' : ''} gap-4`}>
           {/* Chat AI — 2 colonne */}
-          <div className="lg:col-span-2 card-dark">
+          <div className={`${isAdmin ? 'lg:col-span-2' : ''} card-dark`}>
             <div className="flex items-center gap-2 mb-4">
               <span className="text-xl">💬</span>
               <div>
@@ -123,7 +130,7 @@ export default function AiPage() {
                 <button
                   key={s}
                   onClick={() => { setDomanda(s); chiedi(s); }}
-                  className="text-xs px-3 py-1.5 rounded-full border border-dark-500 text-dark-200 hover:border-brand-500 hover:text-brand-400 transition-colors"
+                  className="text-xs px-3 py-1.5 rounded-ful border border-dark-500 text-dark-200 hover:border-brand-500 hover:text-brand-400 transition-colors"
                 >
                   {s}
                 </button>
@@ -165,6 +172,7 @@ export default function AiPage() {
           </div>
 
           {/* Knowledge Base — 1 colonna */}
+          {isAdmin && (
           <div className="card-dark">
             <div className="flex items-center justify-between mb-3">
               <div>
@@ -249,6 +257,7 @@ export default function AiPage() {
               </p>
             )}
           </div>
+      )}
         </div>
       </div>
     </AppLayout>
