@@ -1,11 +1,20 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { query } from '../db';
 import { authenticate } from '../middleware/auth';
+
+// Middleware: solo admin o owner possono accedere alla knowledge base
+const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
+    const role = req.user?.role;
+    if (role !== 'admin' && role !== 'owner') {
+          return res.status(403).json({ error: 'Accesso riservato agli amministratori' });
+    }
+    return next();
+};
 
 const router = Router();
 
 // GET /ai/knowledge — Lista materiali consulenza
-router.get('/knowledge', authenticate, async (req: Request, res: Response) => {
+router.get('/knowledge', authenticate, requireAdmin, async (req: Request, res: Response) => {
   try {
     const wsId = req.user!.workspaceId;
     const items = await query<any>(
@@ -19,7 +28,7 @@ router.get('/knowledge', authenticate, async (req: Request, res: Response) => {
 });
 
 // POST /ai/knowledge — Aggiungi materiale consulenza
-router.post('/knowledge', authenticate, async (req: Request, res: Response) => {
+router.post('/knowledge', authenticate, requireAdmin, async (req: Request, res: Response) => {
   try {
     const wsId = req.user!.workspaceId;
     const userId = req.user!.userId;
@@ -36,7 +45,7 @@ router.post('/knowledge', authenticate, async (req: Request, res: Response) => {
 });
 
 // DELETE /ai/knowledge/:id — Elimina materiale
-router.delete('/knowledge/:id', authenticate, async (req: Request, res: Response) => {
+router.delete('/knowledge/:id', authenticate, requireAdmin, async (req: Request, res: Response) => {
   try {
     const wsId = req.user!.workspaceId;
     await query(`DELETE FROM ai_knowledge_base WHERE id=$1 AND workspace_id=$2`, [req.params.id, wsId]);
