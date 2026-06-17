@@ -13,7 +13,7 @@ import salesRouter from './routes/sales';
 import calculationsRouter from './routes/calculations';
 import locationsRouter from './routes/locations';
 import suppliersRouter from './routes/suppliers';
-// AI consultant + knowledge base routes
+// AI consultant + knowledge base routes (Claude integration)
 import aiRouter from './routes/ai';
 
 const app = express();
@@ -27,12 +27,12 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Health check
+// Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString(), env: config.nodeEnv });
 });
 
-// Routes
+// API Routes
 app.use('/api/auth', authRouter);
 app.use('/api/ingredients', ingredientsRouter);
 app.use('/api/recipes', recipesRouter);
