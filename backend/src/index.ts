@@ -13,10 +13,13 @@ import salesRouter from './routes/sales';
 import calculationsRouter from './routes/calculations';
 import locationsRouter from './routes/locations';
 import suppliersRouter from './routes/suppliers';
-// AI consultant + knowledge base routes (Claude integration)
 import aiRouter from './routes/ai';
+import billingRouter, { stripeWebhookHandler } from './routes/billing';
 
 const app = express();
+
+// Stripe webhook must receive raw body — register BEFORE express.json()
+app.post('/api/billing/webhook', express.raw({ type: 'application/json' }), stripeWebhookHandler);
 
 // Security & parsing middleware
 app.use(helmet());
@@ -42,13 +45,13 @@ app.use('/api/calc', calculationsRouter);
 app.use('/api/locations', locationsRouter);
 app.use('/api/suppliers', suppliersRouter);
 app.use('/api/ai', aiRouter);
+app.use('/api/billing', billingRouter);
 
 // 404 and error handlers
 app.use(notFound);
 app.use(errorHandler);
 
 async function startServer() {
-  // Run DB migrations before starting server
   try {
     await runMigrations();
   } catch (err) {
@@ -56,7 +59,7 @@ async function startServer() {
   }
 
   app.listen(config.port, () => {
-    console.log(`🍽️ RistoBrain API running on port ${config.port} [${config.nodeEnv}]`);
+    console.log(`🍽️  RistoBrain API running on port ${config.port} [${config.nodeEnv}]`);
     console.log(`📊 Health check: http://localhost:${config.port}/health`);
   });
 }
