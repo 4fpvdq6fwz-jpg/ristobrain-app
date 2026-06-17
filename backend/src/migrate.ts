@@ -31,7 +31,7 @@ export async function runMigrations(): Promise<void> {
         const seedSql = fs.readFileSync(seedPath, 'utf-8');
         await client.query(seedSql);
         console.log('✅ Demo data loaded');
-        console.log('  📧 Login: chef@demo.it / demo1234');
+        console.log('   📧 Login: chef@demo.it / demo1234');
       }
     } else {
       console.log('✅ Database already initialized, skipping base migrations');
@@ -52,6 +52,14 @@ export async function runMigrations(): Promise<void> {
     `);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_ai_knowledge_workspace ON ai_knowledge_base (workspace_id)`);
     console.log('✅ AI knowledge base ready');
+
+    // Stripe billing columns
+    await client.query(`ALTER TABLE workspaces ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT`);
+    await client.query(`ALTER TABLE workspaces ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT`);
+    await client.query(`ALTER TABLE workspaces ADD COLUMN IF NOT EXISTS stripe_subscription_status TEXT`);
+    await client.query(`ALTER TABLE workspaces ADD COLUMN IF NOT EXISTS plan_expires_at TIMESTAMPTZ`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_workspaces_stripe_sub ON workspaces (stripe_subscription_id)`);
+    console.log('✅ Stripe billing columns ready');
 
   } catch (err) {
     console.error('❌ Migration failed:', err);
