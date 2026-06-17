@@ -21,6 +21,7 @@
     "multer": "^1.4.5-lts.1",
     "pg": "^8.11.3",
     "redis": "^4.6.11",
+    "stripe": "^14.0.0",
     "uuid": "^9.0.1",
     "xlsx": "^0.18.5"
   },
@@ -30,9 +31,10 @@
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/multer": "^1.4.11",
-    "@types/node": "^20.10.6",
+    "@types/node": "^20.11.0",
     "@types/pg": "^8.10.9",
     "@types/uuid": "^9.0.7",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.3.3"
   }
