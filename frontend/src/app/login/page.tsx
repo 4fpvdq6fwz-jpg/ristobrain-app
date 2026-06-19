@@ -8,26 +8,20 @@ import toast from 'react-hot-toast';
 export default function LoginPage() {
   const [tab, setTab] = useState<'login' | 'register'>('login');
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
-    email: '',
-    password: '',
-    fullName: '',
-    workspaceName: '',
-  });
+  const [form, setForm] = useState({ email: '', password: '', fullName: '', workspaceName: '' });
+
+  const switchTab = (newTab: 'login' | 'register') => {
+    setTab(newTab);
+    setForm({ email: '', password: '', fullName: '', workspaceName: '' });
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
   };
 
-  const switchTab = (newTab: 'login' | 'register') => {
-    setTab(newTab);
-    // Pulisce i campi quando si passa alla registrazione per evitare
-    // che i dati del tab login restino precompilati
-    setForm({ email: '', password: '', fullName: '', workspaceName: '' });
-  };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.email || !form.password) { toast.error('Inserisci email e password'); return; }
     setLoading(true);
     try {
       const res = await authApi.login(form.email, form.password);
@@ -43,25 +37,14 @@ export default function LoginPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.fullName.trim()) {
-      toast.error('Inserisci il tuo nome completo');
-      return;
-    }
-    if (!form.workspaceName.trim()) {
-      toast.error('Inserisci il nome del ristorante');
-      return;
-    }
-    if (form.password.length < 8) {
-      toast.error('La password deve essere di almeno 8 caratteri');
-      return;
-    }
+    if (!form.fullName.trim()) { toast.error('Inserisci il tuo nome completo'); return; }
+    if (!form.workspaceName.trim()) { toast.error('Inserisci il nome del ristorante'); return; }
+    if (form.password.length < 8) { toast.error('La password deve essere di almeno 8 caratteri'); return; }
     setLoading(true);
     try {
       const res = await authApi.register({
-        email: form.email,
-        password: form.password,
-        fullName: form.fullName,
-        workspaceName: form.workspaceName,
+        email: form.email, password: form.password,
+        fullName: form.fullName, workspaceName: form.workspaceName,
       });
       setAuth({ token: res.data.token, user: res.data.user, workspace: res.data.workspace });
       toast.success('Account creato! Benvenuto in RistoBrain!');
@@ -76,7 +59,6 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-dark-900 px-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="text-center mb-8">
           <div className="text-4xl mb-3">🍽️</div>
           <h1 className="text-3xl font-bold text-white">
@@ -85,9 +67,7 @@ export default function LoginPage() {
           <p className="text-dark-200 mt-2 text-sm">Food Cost & Menu Engineering</p>
         </div>
 
-        {/* Card */}
         <div className="card-dark">
-          {/* Tabs */}
           <div className="flex mb-6 bg-dark-700 rounded-lg p-1">
             <button
               onClick={() => switchTab('login')}
@@ -122,9 +102,6 @@ export default function LoginPage() {
               <button type="submit" disabled={loading} className="btn-primary w-full mt-2">
                 {loading ? 'Accesso...' : 'Accedi'}
               </button>
-              <p className="text-center text-xs text-dark-300 mt-3">
-                Demo: chef@demo.it / demo1234
-              </p>
             </form>
           ) : (
             <form onSubmit={handleRegister} className="space-y-4">
@@ -139,9 +116,9 @@ export default function LoginPage() {
                   className="input-dark" placeholder="mario@ristorante.it" required />
               </div>
               <div>
-                <label className="text-sm text-dark-200 block mb-1">Password</label>
+                <label className="text-sm text-dark-200 block mb-1">Password (min. 8 caratteri)</label>
                 <input name="password" type="password" value={form.password} onChange={handleChange}
-                  className="input-dark" placeholder="min. 8 caratteri" required minLength={8} />
+                  className="input-dark" placeholder="••••••••" required />
               </div>
               <div>
                 <label className="text-sm text-dark-200 block mb-1">Nome ristorante</label>
@@ -149,10 +126,10 @@ export default function LoginPage() {
                   className="input-dark" placeholder="Da Mario" required />
               </div>
               <button type="submit" disabled={loading} className="btn-primary w-full mt-2">
-                {loading ? 'Creazione account...' : 'Crea account gratuito'}
+                {loading ? 'Creazione...' : 'Crea account gratuito'}
               </button>
-              <p className="text-center text-xs text-dark-300 mt-2">
-                Registrandoti accetti i termini di utilizzo
+              <p className="text-center text-xs text-dark-400 mt-2">
+                Registrandoti accetti i <a href="/privacy" className="text-brand-400 hover:underline">Termini di servizio</a>
               </p>
             </form>
           )}
