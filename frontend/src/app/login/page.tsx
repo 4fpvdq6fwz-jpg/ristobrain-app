@@ -11,14 +11,19 @@ export default function LoginPage() {
   const [form, setForm] = useState({
     email: '',
     password: '',
-    confirmEmail: '',
-    confirmPassword: '',
     fullName: '',
     workspaceName: '',
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  };
+
+  const switchTab = (newTab: 'login' | 'register') => {
+    setTab(newTab);
+    // Pulisce i campi quando si passa alla registrazione per evitare
+    // che i dati del tab login restino precompilati
+    setForm({ email: '', password: '', fullName: '', workspaceName: '' });
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -38,16 +43,18 @@ export default function LoginPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (form.email !== form.confirmEmail) {
-      toast.error('Le email inserite non coincidono');
+    if (!form.fullName.trim()) {
+      toast.error('Inserisci il tuo nome completo');
       return;
     }
-    if (form.password !== form.confirmPassword) {
-      toast.error('Le password inserite non coincidono');
+    if (!form.workspaceName.trim()) {
+      toast.error('Inserisci il nome del ristorante');
       return;
     }
-
+    if (form.password.length < 8) {
+      toast.error('La password deve essere di almeno 8 caratteri');
+      return;
+    }
     setLoading(true);
     try {
       const res = await authApi.register({
@@ -57,7 +64,7 @@ export default function LoginPage() {
         workspaceName: form.workspaceName,
       });
       setAuth({ token: res.data.token, user: res.data.user, workspace: res.data.workspace });
-      toast.success('Account creato! Benvenuto!');
+      toast.success('Account creato! Benvenuto in RistoBrain!');
       window.location.href = '/dashboard';
     } catch (err: any) {
       toast.error(err.response?.data?.error || 'Errore nella registrazione');
@@ -83,7 +90,7 @@ export default function LoginPage() {
           {/* Tabs */}
           <div className="flex mb-6 bg-dark-700 rounded-lg p-1">
             <button
-              onClick={() => setTab('login')}
+              onClick={() => switchTab('login')}
               className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
                 tab === 'login' ? 'bg-dark-500 text-white' : 'text-dark-200 hover:text-white'
               }`}
@@ -91,7 +98,7 @@ export default function LoginPage() {
               Accedi
             </button>
             <button
-              onClick={() => setTab('register')}
+              onClick={() => switchTab('register')}
               className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
                 tab === 'register' ? 'bg-dark-500 text-white' : 'text-dark-200 hover:text-white'
               }`}
@@ -115,6 +122,9 @@ export default function LoginPage() {
               <button type="submit" disabled={loading} className="btn-primary w-full mt-2">
                 {loading ? 'Accesso...' : 'Accedi'}
               </button>
+              <p className="text-center text-xs text-dark-300 mt-3">
+                Demo: chef@demo.it / demo1234
+              </p>
             </form>
           ) : (
             <form onSubmit={handleRegister} className="space-y-4">
@@ -129,19 +139,9 @@ export default function LoginPage() {
                   className="input-dark" placeholder="mario@ristorante.it" required />
               </div>
               <div>
-                <label className="text-sm text-dark-200 block mb-1">Conferma Email</label>
-                <input name="confirmEmail" type="email" value={form.confirmEmail} onChange={handleChange}
-                  className="input-dark" placeholder="Ripeti l'indirizzo email" required />
-              </div>
-              <div>
                 <label className="text-sm text-dark-200 block mb-1">Password</label>
                 <input name="password" type="password" value={form.password} onChange={handleChange}
-                  className="input-dark" placeholder="min. 8 caratteri" required />
-              </div>
-              <div>
-                <label className="text-sm text-dark-200 block mb-1">Conferma Password</label>
-                <input name="confirmPassword" type="password" value={form.confirmPassword} onChange={handleChange}
-                  className="input-dark" placeholder="Ripeti la password" required />
+                  className="input-dark" placeholder="min. 8 caratteri" required minLength={8} />
               </div>
               <div>
                 <label className="text-sm text-dark-200 block mb-1">Nome ristorante</label>
@@ -149,8 +149,11 @@ export default function LoginPage() {
                   className="input-dark" placeholder="Da Mario" required />
               </div>
               <button type="submit" disabled={loading} className="btn-primary w-full mt-2">
-                {loading ? 'Creazione...' : 'Crea account gratuito'}
+                {loading ? 'Creazione account...' : 'Crea account gratuito'}
               </button>
+              <p className="text-center text-xs text-dark-300 mt-2">
+                Registrandoti accetti i termini di utilizzo
+              </p>
             </form>
           )}
         </div>
