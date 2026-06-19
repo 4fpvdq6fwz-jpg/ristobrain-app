@@ -1,13 +1,15 @@
 import axios from 'axios';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+// In produzione il Next.js proxy (next.config.js rewrites) instrada /api/* → backend
+const BASE_URL = typeof window !== 'undefined'
+  ? '/api'
+  : (process.env.BACKEND_URL || 'http://localhost:4000') + '/api';
 
 const api = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Attach JWT token to every request
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('rb_token');
@@ -16,13 +18,12 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401 globally
 api.interceptors.response.use(
   (res) => res,
   (error) => {
     if (error.response?.status === 401 && typeof window !== 'undefined') {
       localStorage.removeItem('rb_token');
-      localStorage.removeItem('rb_user');
+      localStorage.removeItem('rb_auth');
       window.location.href = '/login';
     }
     return Promise.reject(error);
@@ -39,6 +40,25 @@ export const authApi = {
   me: () => api.get('/auth/me'),
   changePassword: (currentPassword: string, newPassword: string) =>
     api.put('/auth/password', { currentPassword, newPassword }),
+  deleteAccount: (password: string) =>
+    api.delete('/auth/account', { data: { password } }),
+  exportData: () => api.get('/auth/export'),
+};
+
+// Billing
+export const billingApi = {
+  status: () => api.get('/billing/status'),
+  createCheckout: () => api.post('/billing/checkout'),
+  createPortal: () => api.post('/billing/portal'),
+};
+
+// AI Consulente
+export const aiApi = {
+  suggest: (question: string) => api.post('/ai/suggest', { question }),
+  listKnowledge: () => api.get('/ai/knowledge'),
+  addKnowledge: (data: { title: string; content: string; source_type?: string }) =>
+    api.post('/ai/knowledge', data),
+  deleteKnowledge: (id: string) => api.delete(`/ai/knowledge/${id}`),
 };
 
 // Ingredients
@@ -101,19 +121,4 @@ export const suppliersApi = {
   list: () => api.get('/suppliers'),
   create: (data: any) => api.post('/suppliers', data),
   update: (id: string, data: any) => api.put(`/suppliers/${id}`, data),
-};
-
-// AI
-export const aiApi = {
-  suggest: (question: string) => api.post('/ai/suggest', { question }),
-  listKnowledge: () => api.get('/ai/knowledge'),
-  addKnowledge: (data: { title: string; content: string }) => api.post('/ai/knowledge', data),
-  deleteKnowledge: (id: string) => api.delete(`/ai/knowledge/${id}`),
-};
-
-// Billing
-export const billingApi = {
-  status: () => api.get('/billing/status'),
-  createCheckout: () => api.post('/billing/checkout', {}),
-  createPortal: () => api.post('/billing/portal', {}),
 };
