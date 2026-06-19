@@ -6,21 +6,22 @@ import { clearAuth, getAuth } from '@/lib/auth';
 import {
   LayoutDashboard, Package, BookOpen, UtensilsCrossed,
   TrendingUp, BarChart2, ShoppingCart, LogOut, ChevronRight,
-  MapPin, Truck, Brain
+  MapPin, Truck, Brain, CreditCard
 } from 'lucide-react';
 import clsx from 'clsx';
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/ingredients', label: 'Ingredienti', icon: Package },
-  { href: '/recipes', label: 'Ricette', icon: BookOpen },
-  { href: '/menus', label: 'Menu', icon: UtensilsCrossed },
-  { href: '/sales', label: 'Vendite', icon: ShoppingCart },
-  { href: '/engineering', label: 'Analisi Menu', icon: BarChart2 },
-  { href: '/pricing', label: 'Prezzi', icon: TrendingUp },
-  { href: '/ai', label: 'Consulente AI', icon: Brain },
-  { href: '/locations', label: 'Locali', icon: MapPin },
-  { href: '/suppliers', label: 'Fornitori', icon: Truck },
+  { href: '/dashboard',    label: 'Dashboard',    icon: LayoutDashboard },
+  { href: '/ingredients',  label: 'Ingredienti',  icon: Package },
+  { href: '/recipes',      label: 'Ricette',      icon: BookOpen },
+  { href: '/menus',        label: 'Menu',         icon: UtensilsCrossed },
+  { href: '/sales',        label: 'Vendite',      icon: ShoppingCart },
+  { href: '/engineering',  label: 'Analisi Menu', icon: BarChart2 },
+  { href: '/pricing',      label: 'Prezzi',       icon: TrendingUp },
+  { href: '/ai',           label: 'Consulente AI',icon: Brain },
+  { href: '/locations',    label: 'Locali',       icon: MapPin },
+  { href: '/suppliers',    label: 'Fornitori',    icon: Truck },
+  { href: '/billing',      label: 'Piano',        icon: CreditCard },
 ];
 
 export default function Sidebar() {
