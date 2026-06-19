@@ -7,7 +7,6 @@ export async function runMigrations(): Promise<void> {
   try {
     console.log('🔄 Running database migrations...');
 
-    // Check if tables exist already
     const res = await client.query(`
       SELECT COUNT(*) as count
       FROM information_schema.tables
@@ -23,23 +22,11 @@ export async function runMigrations(): Promise<void> {
       const schemaSql = fs.readFileSync(schemaPath, 'utf-8');
       await client.query(schemaSql);
       console.log('✅ Schema created successfully');
-
-      // Load seed data
-      console.log('🌱 Loading demo data...');
-      const seedPath = path.join(__dirname, 'db', 'seed.sql');
-      if (fs.existsSync(seedPath)) {
-        const seedSql = fs.readFileSync(seedPath, 'utf-8');
-        await client.query(seedSql);
-        console.log('✅ Demo data loaded');
-        console.log('   📧 Login: chef@demo.it / demo1234');
-      }
     } else {
       console.log('✅ Database already initialized, running incremental migrations...');
     }
 
     // Incremental migrations — always run (idempotent)
-
-    // Stripe billing columns
     await client.query(`ALTER TABLE workspaces ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT`);
     await client.query(`ALTER TABLE workspaces ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT`);
     await client.query(`ALTER TABLE workspaces ADD COLUMN IF NOT EXISTS stripe_subscription_status TEXT`);
@@ -47,20 +34,25 @@ export async function runMigrations(): Promise<void> {
     await client.query(`CREATE INDEX IF NOT EXISTS idx_workspaces_stripe_sub ON workspaces (stripe_subscription_id)`);
     console.log('✅ Stripe billing columns ready');
 
-    // AI knowledge base table
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS ai_knowledge_base (
-        id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        workspace_id    UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
-        title           TEXT NOT NULL,
-        content         TEXT NOT NULL,
-        source_type     TEXT NOT NULL DEFAULT 'manual',
-        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        created_by      UUID REFERENCES users(id)
-      )
-    `);
+    await client.query(`CREATE TABLE IF NOT EXISTS ai_knowledge_base (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      content TEXT NOT NULL,
+      source_type TEXT NOT NULL DEFAULT 'manual',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      created_by UUID REFERENCES users(id)
+    )`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_ai_kb_workspace ON ai_knowledge_base (workspace_id)`);
     console.log('✅ AI knowledge base table ready');
+
+    // Always ensure demo account exists (ON CONFLICT DO NOTHING = safe to re-run)
+    const seedPath = path.join(__dirname, 'db', 'seed.sql');
+    if (fs.existsSync(seedPath)) {
+      const seedSql = fs.readFileSync(seedPath, 'utf-8');
+      await client.query(seedSql);
+      console.log('✅ Demo data ensured (chef@demo.it / demo1234)');
+    }
 
   } catch (err) {
     console.error('❌ Migration failed:', err);
