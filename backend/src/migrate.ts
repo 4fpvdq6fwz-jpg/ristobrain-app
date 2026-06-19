@@ -12,7 +12,7 @@ export async function runMigrations(): Promise<void> {
       SELECT COUNT(*) as count
       FROM information_schema.tables
       WHERE table_schema = 'public'
-      AND table_name = 'users'
+        AND table_name = 'users'
     `);
 
     const tablesExist = parseInt(res.rows[0].count) > 0;
@@ -34,24 +34,10 @@ export async function runMigrations(): Promise<void> {
         console.log('   📧 Login: chef@demo.it / demo1234');
       }
     } else {
-      console.log('✅ Database already initialized, skipping base migrations');
+      console.log('✅ Database already initialized, running incremental migrations...');
     }
 
-    // Incremental migrations — always run (idempotent via IF NOT EXISTS)
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS ai_knowledge_base (
-        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
-        title TEXT NOT NULL,
-        content TEXT NOT NULL,
-        source_type TEXT NOT NULL DEFAULT 'manual',
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        created_by UUID REFERENCES users(id)
-      )
-    `);
-    await client.query(`CREATE INDEX IF NOT EXISTS idx_ai_knowledge_workspace ON ai_knowledge_base (workspace_id)`);
-    console.log('✅ AI knowledge base ready');
+    // Incremental migrations — always run (idempotent)
 
     // Stripe billing columns
     await client.query(`ALTER TABLE workspaces ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT`);
@@ -60,6 +46,21 @@ export async function runMigrations(): Promise<void> {
     await client.query(`ALTER TABLE workspaces ADD COLUMN IF NOT EXISTS plan_expires_at TIMESTAMPTZ`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_workspaces_stripe_sub ON workspaces (stripe_subscription_id)`);
     console.log('✅ Stripe billing columns ready');
+
+    // AI knowledge base table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS ai_knowledge_base (
+        id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        workspace_id    UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+        title           TEXT NOT NULL,
+        content         TEXT NOT NULL,
+        source_type     TEXT NOT NULL DEFAULT 'manual',
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_by      UUID REFERENCES users(id)
+      )
+    `);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_ai_kb_workspace ON ai_knowledge_base (workspace_id)`);
+    console.log('✅ AI knowledge base table ready');
 
   } catch (err) {
     console.error('❌ Migration failed:', err);
