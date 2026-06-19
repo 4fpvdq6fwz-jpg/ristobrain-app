@@ -13,7 +13,7 @@ router.post('/login', async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+      return res.status(400).json({ error: 'Email e password obbligatori' });
     }
 
     const user = await queryOne<any>(
@@ -22,15 +22,14 @@ router.post('/login', async (req: Request, res: Response) => {
     );
 
     if (!user) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Credenziali non valide' });
     }
 
     const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Credenziali non valide' });
     }
 
-    // Get workspace membership
     const membership = await queryOne<any>(
       `SELECT wu.workspace_id, wu.role, w.name as workspace_name, w.slug
        FROM workspace_users wu
@@ -42,7 +41,7 @@ router.post('/login', async (req: Request, res: Response) => {
     );
 
     if (!membership) {
-      return res.status(403).json({ error: 'No active workspace found' });
+      return res.status(403).json({ error: 'Nessun workspace trovato' });
     }
 
     const payload = {
@@ -58,11 +57,7 @@ router.post('/login', async (req: Request, res: Response) => {
 
     return res.json({
       token,
-      user: {
-        id: user.id,
-        email: user.email,
-        fullName: user.full_name,
-      },
+      user: { id: user.id, email: user.email, fullName: user.full_name },
       workspace: {
         id: membership.workspace_id,
         name: membership.workspace_name,
@@ -72,7 +67,7 @@ router.post('/login', async (req: Request, res: Response) => {
     });
   } catch (err) {
     console.error('Login error:', err);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Errore interno' });
   }
 });
 
@@ -80,15 +75,13 @@ router.post('/login', async (req: Request, res: Response) => {
 router.get('/me', authenticate, async (req: Request, res: Response) => {
   try {
     const user = await queryOne<any>(
-      'SELECT id, email, full_name, avatar_url, created_at FROM users WHERE id = $1',
+      'SELECT id, email, full_name, created_at FROM users WHERE id = $1',
       [req.user!.userId]
     );
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
+    if (!user) return res.status(404).json({ error: 'Utente non trovato' });
     return res.json({ user, workspaceId: req.user!.workspaceId, role: req.user!.role });
   } catch (err) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Errore interno' });
   }
 });
 
@@ -97,32 +90,30 @@ router.post('/register', async (req: Request, res: Response) => {
   try {
     const { email, password, fullName, workspaceName } = req.body;
     if (!email || !password || !fullName || !workspaceName) {
-      return res.status(400).json({ error: 'All fields are required' });
+      return res.status(400).json({ error: 'Tutti i campi sono obbligatori' });
     }
     if (password.length < 8) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters' });
+      return res.status(400).json({ error: 'La password deve essere di almeno 8 caratteri' });
     }
 
     const existing = await queryOne('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
     if (existing) {
-      return res.status(409).json({ error: 'Email already in use' });
+      return res.status(409).json({ error: 'Email già in uso' });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
     const userId = uuidv4();
     const workspaceId = uuidv4();
-    const slug = workspaceName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    const slug = workspaceName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + userId.slice(0, 8);
 
     await query(
       'INSERT INTO users (id, email, password_hash, full_name) VALUES ($1, $2, $3, $4)',
       [userId, email.toLowerCase(), passwordHash, fullName]
     );
-
     await query(
       'INSERT INTO workspaces (id, name, slug, plan) VALUES ($1, $2, $3, $4)',
-      [workspaceId, workspaceName, slug + '-' + userId.slice(0, 8), 'free']
+      [workspaceId, workspaceName, slug, 'free']
     );
-
     await query(
       'INSERT INTO workspace_users (workspace_id, user_id, role) VALUES ($1, $2, $3)',
       [workspaceId, userId, 'owner']
@@ -138,7 +129,7 @@ router.post('/register', async (req: Request, res: Response) => {
     });
   } catch (err) {
     console.error('Register error:', err);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Errore nella registrazione' });
   }
 });
 
@@ -147,24 +138,87 @@ router.put('/password', authenticate, async (req: Request, res: Response) => {
   try {
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({ error: 'Both passwords are required' });
+      return res.status(400).json({ error: 'Entrambe le password sono obbligatorie' });
     }
     if (newPassword.length < 8) {
-      return res.status(400).json({ error: 'New password must be at least 8 characters' });
+      return res.status(400).json({ error: 'La nuova password deve essere di almeno 8 caratteri' });
     }
 
     const user = await queryOne<any>('SELECT password_hash FROM users WHERE id = $1', [req.user!.userId]);
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) return res.status(404).json({ error: 'Utente non trovato' });
 
     const valid = await bcrypt.compare(currentPassword, user.password_hash);
-    if (!valid) return res.status(401).json({ error: 'Current password is incorrect' });
+    if (!valid) return res.status(401).json({ error: 'Password attuale non corretta' });
 
     const newHash = await bcrypt.hash(newPassword, 10);
     await query('UPDATE users SET password_hash = $1 WHERE id = $2', [newHash, req.user!.userId]);
 
-    return res.json({ message: 'Password updated successfully' });
+    return res.json({ message: 'Password aggiornata' });
   } catch (err) {
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Errore interno' });
+  }
+});
+
+// DELETE /auth/account — GDPR: cancella tutti i dati dell'utente
+router.delete('/account', authenticate, async (req: Request, res: Response) => {
+  try {
+    const { password } = req.body;
+    if (!password) {
+      return res.status(400).json({ error: 'Password obbligatoria per confermare la cancellazione' });
+    }
+
+    const user = await queryOne<any>('SELECT password_hash FROM users WHERE id = $1', [req.user!.userId]);
+    if (!user) return res.status(404).json({ error: 'Utente non trovato' });
+
+    const valid = await bcrypt.compare(password, user.password_hash);
+    if (!valid) return res.status(401).json({ error: 'Password non corretta' });
+
+    // Soft-delete: marca utente come eliminato
+    await query(
+      `UPDATE users SET deleted_at = NOW(), email = $1, full_name = 'Account eliminato' WHERE id = $2`,
+      ['deleted_' + req.user!.userId + '@deleted.invalid', req.user!.userId]
+    );
+
+    // Se è l'unico owner del workspace, soft-delete anche il workspace
+    const otherOwners = await query<any>(
+      `SELECT user_id FROM workspace_users WHERE workspace_id = $1 AND role = 'owner' AND user_id != $2`,
+      [req.user!.workspaceId, req.user!.userId]
+    );
+    if (otherOwners.length === 0) {
+      await query('UPDATE workspaces SET deleted_at = NOW() WHERE id = $1', [req.user!.workspaceId]);
+    }
+
+    return res.json({ message: 'Account eliminato con successo' });
+  } catch (err) {
+    console.error('Delete account error:', err);
+    return res.status(500).json({ error: 'Errore nella cancellazione account' });
+  }
+});
+
+// GET /auth/export — GDPR: esporta tutti i dati dell'utente
+router.get('/export', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.userId;
+    const wsId = req.user!.workspaceId;
+
+    const [user, workspace, ingredients, recipes, menus, sales] = await Promise.all([
+      queryOne<any>('SELECT id, email, full_name, created_at FROM users WHERE id = $1', [userId]),
+      queryOne<any>('SELECT id, name, slug, plan, created_at FROM workspaces WHERE id = $1', [wsId]),
+      query<any>('SELECT id, name, purchase_unit, created_at FROM ingredients WHERE workspace_id = $1 AND deleted_at IS NULL', [wsId]),
+      query<any>('SELECT id, name, description, created_at FROM recipes WHERE workspace_id = $1 AND deleted_at IS NULL', [wsId]),
+      query<any>('SELECT id, name, created_at FROM menus WHERE workspace_id = $1 AND deleted_at IS NULL', [wsId]),
+      query<any>('SELECT sp.name, sp.period_from, sp.period_to, sp.total_revenue FROM sales_periods sp WHERE sp.workspace_id = $1 ORDER BY sp.period_from DESC LIMIT 50', [wsId]),
+    ]);
+
+    return res.json({
+      exportDate: new Date().toISOString(),
+      user,
+      workspace,
+      data: { ingredients, recipes, menus, sales },
+    });
+  } catch (err) {
+    console.error('Export error:', err);
+    return res.status(500).json({ error: 'Errore nell\'esportazione dati' });
   }
 });
 
