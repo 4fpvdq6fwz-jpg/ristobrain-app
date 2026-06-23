@@ -6,7 +6,7 @@ import { clearAuth, getAuth } from '@/lib/auth';
 import {
   LayoutDashboard, Package, BookOpen, UtensilsCrossed,
   TrendingUp, BarChart2, ShoppingCart, LogOut, ChevronRight,
-  MapPin, Truck, Brain, CreditCard
+  MapPin, Truck, Brain, CreditCard, Settings
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -22,6 +22,7 @@ const navItems = [
   { href: '/locations',    label: 'Locali',       icon: MapPin },
   { href: '/suppliers',    label: 'Fornitori',    icon: Truck },
   { href: '/billing',      label: 'Piano',        icon: CreditCard },
+  { href: '/impostazioni', label: 'Impostazioni', icon: Settings },
 ];
 
 export default function Sidebar() {
