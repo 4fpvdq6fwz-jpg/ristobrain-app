@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
-import { query, queryOne } from '../db';
+import { query, queryOne, withTransaction } from '../db';
 import { config } from '../config';
 import { authenticate } from '../middleware/auth';
 
@@ -44,11 +44,18 @@ router.post('/login', async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Nessun workspace trovato' });
     }
 
+    // Anti-sharing: ogni login invalida le sessioni precedenti (un solo accesso attivo per account)
+    const sv = await queryOne<any>(
+      'UPDATE users SET session_version = session_version + 1 WHERE id = $1 RETURNING session_version',
+      [user.id]
+    );
+
     const payload = {
       userId: user.id,
       workspaceId: membership.workspace_id,
       role: membership.role,
       email: user.email,
+      sessionVersion: sv?.session_version ?? 0,
     };
 
     const token = jwt.sign(payload, config.jwtSecret, {
@@ -106,20 +113,22 @@ router.post('/register', async (req: Request, res: Response) => {
     const workspaceId = uuidv4();
     const slug = workspaceName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + userId.slice(0, 8);
 
-    await query(
-      'INSERT INTO users (id, email, password_hash, full_name) VALUES ($1, $2, $3, $4)',
-      [userId, email.toLowerCase(), passwordHash, fullName]
-    );
-    await query(
-      'INSERT INTO workspaces (id, name, slug, plan) VALUES ($1, $2, $3, $4)',
-      [workspaceId, workspaceName, slug, 'free']
-    );
-    await query(
-      'INSERT INTO workspace_users (workspace_id, user_id, role) VALUES ($1, $2, $3)',
-      [workspaceId, userId, 'owner']
-    );
+    await withTransaction(async (client) => {
+      await client.query(
+        'INSERT INTO users (id, email, password_hash, full_name) VALUES ($1, $2, $3, $4)',
+        [userId, email.toLowerCase(), passwordHash, fullName]
+      );
+      await client.query(
+        'INSERT INTO workspaces (id, name, slug, plan) VALUES ($1, $2, $3, $4)',
+        [workspaceId, workspaceName, slug, 'free']
+      );
+      await client.query(
+        'INSERT INTO workspace_users (workspace_id, user_id, role) VALUES ($1, $2, $3)',
+        [workspaceId, userId, 'owner']
+      );
+    });
 
-    const payload = { userId, workspaceId, role: 'owner', email: email.toLowerCase() };
+    const payload = { userId, workspaceId, role: 'owner', email: email.toLowerCase(), sessionVersion: 0 };
     const token = jwt.sign(payload, config.jwtSecret, { expiresIn: config.jwtExpiresIn as any });
 
     return res.status(201).json({
