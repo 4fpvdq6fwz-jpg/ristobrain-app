@@ -5,6 +5,7 @@ export interface AuthUser {
   workspaceId: string;
   role: UserRole;
   email: string;
+  sessionVersion?: number;
 }
 
 declare global {
