@@ -11,7 +11,7 @@ export async function runMigrations(): Promise<void> {
       SELECT COUNT(*) as count
       FROM information_schema.tables
       WHERE table_schema = 'public'
-        AND table_name = 'users'
+      AND table_name = 'users'
     `);
 
     const tablesExist = parseInt(res.rows[0].count) > 0;
@@ -45,6 +45,10 @@ export async function runMigrations(): Promise<void> {
     )`);
     await client.query(`CREATE INDEX IF NOT EXISTS idx_ai_kb_workspace ON ai_knowledge_base (workspace_id)`);
     console.log('✅ AI knowledge base table ready');
+
+    // Anti-sharing: versione sessione per invalidare i token a ogni nuovo login
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS session_version INTEGER NOT NULL DEFAULT 0`);
+    console.log('✅ Session version column ready');
 
     // Always ensure demo account exists (ON CONFLICT DO NOTHING = safe to re-run)
     const seedPath = path.join(__dirname, 'db', 'seed.sql');
