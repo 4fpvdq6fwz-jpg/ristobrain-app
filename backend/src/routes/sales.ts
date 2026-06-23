@@ -111,7 +111,10 @@ router.post('/', authenticate, requireRoles('owner', 'admin', 'manager'), async 
 router.delete('/:id', authenticate, requireRoles('owner', 'admin'), async (req: Request, res: Response) => {
   try {
     await withTransaction(async (client) => {
-      await client.query('DELETE FROM sales_lines WHERE sales_period_id = $1', [req.params.id]);
+      await client.query(
+        'DELETE FROM sales_lines WHERE sales_period_id IN (SELECT id FROM sales_periods WHERE id = $1 AND workspace_id = $2)',
+        [req.params.id, req.user!.workspaceId]
+      );
       await client.query('DELETE FROM sales_periods WHERE id = $1 AND workspace_id = $2', [req.params.id, req.user!.workspaceId]);
     });
     return res.json({ message: 'Sales period deleted' });
