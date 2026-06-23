@@ -151,6 +151,9 @@ router.post('/:id/items', authenticate, requireRoles('owner', 'admin', 'manager'
 // PUT /menus/:id/items/:itemId
 router.put('/:id/items/:itemId', authenticate, requireRoles('owner', 'admin', 'manager'), async (req: Request, res: Response) => {
   try {
+    const menu = await queryOne('SELECT id FROM menus WHERE id = $1 AND workspace_id = $2', [req.params.id, req.user!.workspaceId]);
+    if (!menu) return res.status(403).json({ error: 'Forbidden' });
+
     const { name, description, price, status, categoryId, recipeId } = req.body;
     await query(
       `UPDATE menu_items SET name=$1, description=$2, price=$3, status=$4, category_id=$5, recipe_id=$6 WHERE id=$7 AND menu_id=$8`,
@@ -166,6 +169,9 @@ router.put('/:id/items/:itemId', authenticate, requireRoles('owner', 'admin', 'm
 // DELETE /menus/:id/items/:itemId
 router.delete('/:id/items/:itemId', authenticate, requireRoles('owner', 'admin', 'manager'), async (req: Request, res: Response) => {
   try {
+    const menu = await queryOne('SELECT id FROM menus WHERE id = $1 AND workspace_id = $2', [req.params.id, req.user!.workspaceId]);
+    if (!menu) return res.status(403).json({ error: 'Forbidden' });
+
     await query('DELETE FROM menu_items WHERE id = $1 AND menu_id = $2', [req.params.itemId, req.params.id]);
     return res.json({ message: 'Item removed' });
   } catch (err) {
