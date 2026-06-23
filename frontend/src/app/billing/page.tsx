@@ -64,7 +64,7 @@ export default function BillingPage() {
   };
 
   const handleUpgrade = async () => {
-    if (!isOwner) { toast.error('Solo il proprietario può gestire l'abbonamento'); return; }
+    if (!isOwner) { toast.error("Solo il proprietario può gestire l'abbonamento"); return; }
     setRedirecting(true);
     try {
       const res = await billingApi.createCheckout();
@@ -76,7 +76,7 @@ export default function BillingPage() {
   };
 
   const handleManage = async () => {
-    if (!isOwner) { toast.error('Solo il proprietario può gestire l'abbonamento'); return; }
+    if (!isOwner) { toast.error("Solo il proprietario può gestire l'abbonamento"); return; }
     setRedirecting(true);
     try {
       const res = await billingApi.createPortal();
