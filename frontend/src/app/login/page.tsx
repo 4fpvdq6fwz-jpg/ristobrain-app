@@ -8,11 +8,11 @@ import toast from 'react-hot-toast';
 export default function LoginPage() {
   const [tab, setTab] = useState<'login' | 'register'>('login');
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ email: '', password: '', fullName: '', workspaceName: '' });
+  const [form, setForm] = useState({ email: '', password: '', fullName: '', workspaceName: '', phone: '' });
 
   const switchTab = (t: 'login' | 'register') => {
     setTab(t);
-    setForm({ email: '', password: '', fullName: '', workspaceName: '' });
+    setForm({ email: '', password: '', fullName: '', workspaceName: '', phone: '' });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,6 +47,7 @@ export default function LoginPage() {
         password: form.password,
         fullName: form.fullName,
         workspaceName: form.workspaceName,
+        phone: form.phone,
       });
       setAuth({ token: res.data.token, user: res.data.user, workspace: res.data.workspace });
       toast.success('Account creato! Benvenuto!');
@@ -115,6 +116,11 @@ export default function LoginPage() {
                 <label className="text-sm text-dark-200 block mb-1">Email</label>
                 <input name="email" type="email" value={form.email} onChange={handleChange}
                   className="input-dark" placeholder="mario@ristorante.it" required />
+              </div>
+              <div>
+                <label className="text-sm text-dark-200 block mb-1">Cellulare</label>
+                <input name="phone" type="tel" value={form.phone} onChange={handleChange}
+                  className="input-dark" placeholder="+39 333 1234567" required />
               </div>
               <div>
                 <label className="text-sm text-dark-200 block mb-1">Password (min. 8 caratteri)</label>
