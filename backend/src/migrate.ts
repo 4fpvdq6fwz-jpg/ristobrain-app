@@ -50,6 +50,12 @@ export async function runMigrations(): Promise<void> {
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS session_version INTEGER NOT NULL DEFAULT 0`);
     console.log('✅ Session version column ready');
 
+    // Allergeni (Allergeni & HACCP) e scorte di magazzino
+    await client.query(`ALTER TABLE ingredients ADD COLUMN IF NOT EXISTS allergens TEXT[] DEFAULT '{}'`);
+    await client.query(`ALTER TABLE ingredients ADD COLUMN IF NOT EXISTS stock_qty NUMERIC DEFAULT 0`);
+    await client.query(`ALTER TABLE ingredients ADD COLUMN IF NOT EXISTS min_stock NUMERIC DEFAULT 0`);
+    console.log('✅ Allergens & stock columns ready');
+
     // Always ensure demo account exists (ON CONFLICT DO NOTHING = safe to re-run)
     const seedPath = path.join(__dirname, 'db', 'seed.sql');
     if (fs.existsSync(seedPath)) {
