@@ -4,12 +4,13 @@ import { useEffect, useState } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { adminApi } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Users, CheckCircle2 } from 'lucide-react';
+import { Users, CheckCircle2, Trash2 } from 'lucide-react';
 
 export default function AdminPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [denied, setDenied] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
     adminApi.stats()
@@ -20,6 +21,28 @@ export default function AdminPage() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const handleDelete = async (acc: any) => {
+    if (!window.confirm(`Eliminare l'account "${acc.email}"? L'azione e reversibile dal database.`)) return;
+    setDeleting(acc.id);
+    try {
+      await adminApi.deleteAccount(acc.id);
+      setData((prev: any) => {
+        const accounts = prev.accounts.filter((a: any) => a.id !== acc.id);
+        return {
+          ...prev,
+          accounts,
+          totalAccounts: accounts.length,
+          activeAccounts: accounts.filter((a: any) => a.active).length,
+        };
+      });
+      toast.success('Account eliminato');
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Errore nell eliminazione');
+    } finally {
+      setDeleting(null);
+    }
+  };
 
   return (
     <AppLayout>
@@ -60,6 +83,7 @@ export default function AdminPage() {
                     <th className="text-right py-3 px-3 text-dark-200 font-medium">Menu</th>
                     <th className="text-right py-3 px-3 text-dark-200 font-medium">Vendite</th>
                     <th className="text-center py-3 px-3 text-dark-200 font-medium">Usa?</th>
+                    <th className="py-3 px-3"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -67,7 +91,7 @@ export default function AdminPage() {
                     <tr key={a.id} className="border-b border-dark-700 last:border-0">
                       <td className="py-2.5 px-3">
                         <p className="text-white font-medium">{a.fullName}</p>
-                        <p className="text-xs text-dark-400">{a.email}</p>
+                        <p className="text-xs text-dark-400">{a.email}{a.phone ? ` · ${a.phone}` : ''}</p>
                       </td>
                       <td className="py-2.5 px-3 text-dark-200">{a.workspaceName || '—'}</td>
                       <td className="py-2.5 px-3 text-dark-300 text-xs">{a.createdAt ? new Date(a.createdAt).toLocaleDateString('it-IT') : '—'}</td>
@@ -79,6 +103,12 @@ export default function AdminPage() {
                         {a.active
                           ? <CheckCircle2 size={16} className="text-green-400 inline" />
                           : <span className="text-dark-500">—</span>}
+                      </td>
+                      <td className="py-2.5 px-3 text-right">
+                        <button onClick={() => handleDelete(a)} disabled={deleting === a.id}
+                          className="text-dark-400 hover:text-red-400 transition-colors disabled:opacity-40" title="Elimina account">
+                          <Trash2 size={15} />
+                        </button>
                       </td>
                     </tr>
                   ))}
