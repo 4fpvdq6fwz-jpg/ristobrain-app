@@ -35,7 +35,7 @@ export default api;
 // Auth
 export const authApi = {
   login: (email: string, password: string) => api.post('/auth/login', { email, password }),
-  register: (data: { email: string; password: string; fullName: string; workspaceName: string }) =>
+  register: (data: { email: string; password: string; fullName: string; workspaceName: string; phone: string }) =>
     api.post('/auth/register', data),
   me: () => api.get('/auth/me'),
   changePassword: (currentPassword: string, newPassword: string) =>
@@ -48,6 +48,7 @@ export const authApi = {
 // Admin (riservato master)
 export const adminApi = {
   stats: () => api.get('/auth/admin/stats'),
+  deleteAccount: (userId: string) => api.post('/auth/admin/delete-account', { userId }),
 };
 
 // Billing
