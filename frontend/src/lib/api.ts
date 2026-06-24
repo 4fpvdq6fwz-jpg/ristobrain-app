@@ -45,6 +45,11 @@ export const authApi = {
   exportData: () => api.get('/auth/export'),
 };
 
+// Admin (riservato master)
+export const adminApi = {
+  stats: () => api.get('/auth/admin/stats'),
+};
+
 // Billing
 export const billingApi = {
   status: () => api.get('/billing/status'),
