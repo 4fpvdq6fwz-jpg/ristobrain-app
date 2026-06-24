@@ -1,5 +1,21 @@
 -- SEED: Demo workspace + user per testare subito
 -- Password: demo1234
+
+-- Pulizia dati transazionali demo: evita duplicati a ogni re-seed sui deploy
+-- (queste tabelle non hanno un vincolo unico naturale, quindi gli INSERT si accumulerebbero)
+DELETE FROM sales_lines WHERE sales_period_id = 'cccccccc-0000-0000-0000-000000000001';
+DELETE FROM recipe_items WHERE recipe_id IN (
+  '88888888-0000-0000-0000-000000000001',
+  '88888888-0000-0000-0000-000000000002',
+  '88888888-0000-0000-0000-000000000003'
+);
+DELETE FROM ingredient_prices WHERE ingredient_id IN (
+  '66666666-0000-0000-0000-000000000001','66666666-0000-0000-0000-000000000002',
+  '66666666-0000-0000-0000-000000000003','66666666-0000-0000-0000-000000000004',
+  '66666666-0000-0000-0000-000000000005','66666666-0000-0000-0000-000000000006',
+  '66666666-0000-0000-0000-000000000007','66666666-0000-0000-0000-000000000008'
+);
+
 INSERT INTO users (id, email, password_hash, full_name) VALUES
 ('11111111-0000-0000-0000-000000000001', 'chef@demo.it', '$2b$10$YnKJGm3MeHjAzQWV3FxmhOS96BDxKD2vJe7IxBMRQeEQDKJEW9lAu', 'Chef Davide Demo')
 ON CONFLICT (email) DO NOTHING;
@@ -44,17 +60,16 @@ INSERT INTO ingredients (id, workspace_id, category_id, code, name, purchase_uni
 ('66666666-0000-0000-0000-000000000008', '22222222-0000-0000-0000-000000000001', '55555555-0000-0000-0000-000000000004', 'ING-008', 'Branzino (500g+)', 'kg', 'g', 1000, 15, 65, NULL)
 ON CONFLICT DO NOTHING;
 
--- Prezzi ingredienti
+-- Prezzi ingredienti (prezzo per unita di acquisto)
 INSERT INTO ingredient_prices (ingredient_id, price_per_purchase_unit, valid_from) VALUES
 ('66666666-0000-0000-0000-000000000001', 2.40, '2024-11-01'),
-('66666666-0000-0000-0000-000000000002', 4.20, '2024-11-01'),
+('66666666-0000-0000-0000-000000000002', 0.70, '2024-11-01'),
 ('66666666-0000-0000-0000-000000000003', 28.00, '2024-11-01'),
 ('66666666-0000-0000-0000-000000000004', 24.00, '2024-11-01'),
 ('66666666-0000-0000-0000-000000000005', 12.00, '2024-11-01'),
 ('66666666-0000-0000-0000-000000000006', 8.50, '2024-11-01'),
 ('66666666-0000-0000-0000-000000000007', 6.00, '2024-11-01'),
-('66666666-0000-0000-0000-000000000008', 12.50, '2024-11-01')
-ON CONFLICT DO NOTHING;
+('66666666-0000-0000-0000-000000000008', 12.50, '2024-11-01');
 
 -- Categorie ricette
 INSERT INTO recipe_categories (id, workspace_id, name, target_fc_pct, sort_order) VALUES
@@ -68,7 +83,7 @@ ON CONFLICT DO NOTHING;
 INSERT INTO recipes (id, workspace_id, category_id, name, description, yield_portions, prep_time_min, cook_time_min, created_by) VALUES
 ('88888888-0000-0000-0000-000000000001', '22222222-0000-0000-0000-000000000001', '77777777-0000-0000-0000-000000000002', 'Risotto al Tartufo Nero', 'Riso Carnaroli mantecato con tartufo nero fresco e parmigiano 36 mesi', 1, 5, 22, '11111111-0000-0000-0000-000000000001'),
 ('88888888-0000-0000-0000-000000000002', '22222222-0000-0000-0000-000000000001', '77777777-0000-0000-0000-000000000003', 'Tagliata di Fassona', 'Fassona piemontese con rucola e grana padano', 1, 5, 10, '11111111-0000-0000-0000-000000000001'),
-('88888888-0000-0000-0000-000000000003', '22222222-0000-0000-0000-000000000001', '77777777-0000-0000-0000-000000000004', 'Tiramisù Artigianale', 'Tiramisù con mascarpone fresco e savoiardi artigianali', 6, 20, 0, '11111111-0000-0000-0000-000000000001')
+('88888888-0000-0000-0000-000000000003', '22222222-0000-0000-0000-000000000001', '77777777-0000-0000-0000-000000000004', 'Tiramisu Artigianale', 'Tiramisu con mascarpone fresco e savoiardi artigianali', 6, 20, 0, '11111111-0000-0000-0000-000000000001')
 ON CONFLICT DO NOTHING;
 
 -- BOM Risotto al Tartufo
@@ -76,19 +91,16 @@ INSERT INTO recipe_items (recipe_id, ingredient_id, quantity, unit, item_type, s
 ('88888888-0000-0000-0000-000000000001', '66666666-0000-0000-0000-000000000001', 90, 'g', 'primary', 1),
 ('88888888-0000-0000-0000-000000000001', '66666666-0000-0000-0000-000000000002', 8, 'g', 'primary', 2),
 ('88888888-0000-0000-0000-000000000001', '66666666-0000-0000-0000-000000000004', 20, 'g', 'primary', 3),
-('88888888-0000-0000-0000-000000000001', '66666666-0000-0000-0000-000000000005', 15, 'g', 'primary', 4)
-ON CONFLICT DO NOTHING;
+('88888888-0000-0000-0000-000000000001', '66666666-0000-0000-0000-000000000005', 15, 'g', 'primary', 4);
 
 -- BOM Tagliata
 INSERT INTO recipe_items (recipe_id, ingredient_id, quantity, unit, item_type, sort_order) VALUES
-('88888888-0000-0000-0000-000000000002', '66666666-0000-0000-0000-000000000003', 250, 'g', 'primary', 1)
-ON CONFLICT DO NOTHING;
+('88888888-0000-0000-0000-000000000002', '66666666-0000-0000-0000-000000000003', 250, 'g', 'primary', 1);
 
--- BOM Tiramisù (resa 6 porzioni)
+-- BOM Tiramisu (resa 6 porzioni)
 INSERT INTO recipe_items (recipe_id, ingredient_id, quantity, unit, item_type, sort_order) VALUES
 ('88888888-0000-0000-0000-000000000003', '66666666-0000-0000-0000-000000000006', 500, 'g', 'primary', 1),
-('88888888-0000-0000-0000-000000000003', '66666666-0000-0000-0000-000000000007', 200, 'g', 'primary', 2)
-ON CONFLICT DO NOTHING;
+('88888888-0000-0000-0000-000000000003', '66666666-0000-0000-0000-000000000007', 200, 'g', 'primary', 2);
 
 -- Menu categorie
 INSERT INTO menu_categories (id, workspace_id, location_id, name, sort_order, target_fc_pct) VALUES
@@ -106,7 +118,7 @@ ON CONFLICT DO NOTHING;
 INSERT INTO menu_items (id, menu_id, category_id, recipe_id, name, description, price, status) VALUES
 ('bbbbbbbb-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', '99999999-0000-0000-0000-000000000001', '88888888-0000-0000-0000-000000000001', 'Risotto al Tartufo Nero', 'Riso Carnaroli, tartufo nero fresco, parmigiano 36 mesi', 24.00, 'active'),
 ('bbbbbbbb-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000001', '99999999-0000-0000-0000-000000000002', '88888888-0000-0000-0000-000000000002', 'Tagliata di Fassona', 'Fassona piemontese, rucola, grana padano', 28.00, 'active'),
-('bbbbbbbb-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000001', '99999999-0000-0000-0000-000000000003', '88888888-0000-0000-0000-000000000003', 'Tiramisù Artigianale', 'Mascarpone fresco, savoiardi artigianali, caffè espresso', 9.00, 'active')
+('bbbbbbbb-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000001', '99999999-0000-0000-0000-000000000003', '88888888-0000-0000-0000-000000000003', 'Tiramisu Artigianale', 'Mascarpone fresco, savoiardi artigianali, caffe espresso', 9.00, 'active')
 ON CONFLICT DO NOTHING;
 
 -- Periodo vendite demo (novembre)
@@ -117,5 +129,4 @@ ON CONFLICT DO NOTHING;
 INSERT INTO sales_lines (sales_period_id, menu_item_id, item_name, qty_sold, unit_price, total_revenue) VALUES
 ('cccccccc-0000-0000-0000-000000000001', 'bbbbbbbb-0000-0000-0000-000000000001', 'Risotto al Tartufo Nero', 248, 24.00, 5952.00),
 ('cccccccc-0000-0000-0000-000000000001', 'bbbbbbbb-0000-0000-0000-000000000002', 'Tagliata di Fassona', 187, 28.00, 5236.00),
-('cccccccc-0000-0000-0000-000000000001', 'bbbbbbbb-0000-0000-0000-000000000003', 'Tiramisù Artigianale', 151, 9.00, 1359.00)
-ON CONFLICT DO NOTHING;
+('cccccccc-0000-0000-0000-000000000001', 'bbbbbbbb-0000-0000-0000-000000000003', 'Tiramisu Artigianale', 151, 9.00, 1359.00);
