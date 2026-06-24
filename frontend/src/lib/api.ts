@@ -81,6 +81,16 @@ export const ingredientsApi = {
   categories: () => api.get('/ingredients/categories/list'),
 };
 
+// Invoices (caricamento fatture → prezzi automatici)
+export const invoicesApi = {
+  parse: (file: File) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    return api.post('/invoices/parse', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+  confirm: (data: { validFrom?: string; lines: any[] }) => api.post('/invoices/confirm', data),
+};
+
 // Recipes
 export const recipesApi = {
   list: (params?: { categoryId?: string; search?: string }) => api.get('/recipes', { params }),
