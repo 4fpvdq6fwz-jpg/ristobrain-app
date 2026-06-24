@@ -84,6 +84,54 @@ router.get('/alerts/prices', authenticate, async (req: Request, res: Response) =
   }
 });
 
+// GET /ingredients/restock -> ingredienti sotto la scorta minima
+router.get('/restock', authenticate, async (req: Request, res: Response) => {
+  try {
+    const rows = await query<any>(
+      `SELECT i.id, i.name, i.purchase_unit, i.stock_qty, i.min_stock,
+        (i.min_stock - i.stock_qty) AS to_order,
+        s.id AS supplier_id, s.name AS supplier_name
+       FROM ingredients i
+       LEFT JOIN suppliers s ON s.id = i.primary_supplier_id
+       WHERE i.workspace_id = $1 AND i.deleted_at IS NULL
+         AND i.min_stock > 0 AND i.stock_qty < i.min_stock
+       ORDER BY s.name NULLS LAST, i.name`,
+      [req.user!.workspaceId]
+    );
+    return res.json({ items: rows });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /ingredients/menu-allergens?menuId=xxx -> allergeni aggregati per piatto del menu
+router.get('/menu-allergens', authenticate, async (req: Request, res: Response) => {
+  try {
+    const { menuId } = req.query;
+    if (!menuId) return res.status(400).json({ error: 'menuId is required' });
+    const rows = await query<any>(
+      `SELECT mi.id, mi.name,
+        COALESCE((
+          SELECT array_agg(DISTINCT a ORDER BY a)
+          FROM recipe_items ri
+          JOIN ingredients i ON i.id = ri.ingredient_id
+          CROSS JOIN LATERAL unnest(i.allergens) AS a
+          WHERE ri.recipe_id = mi.recipe_id
+        ), '{}') AS allergens
+       FROM menu_items mi
+       JOIN menus m ON m.id = mi.menu_id
+       WHERE mi.menu_id = $1 AND mi.status = 'active' AND m.workspace_id = $2
+       ORDER BY mi.sort_order`,
+      [menuId, req.user!.workspaceId]
+    );
+    return res.json({ items: rows });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // GET /ingredients/:id
 router.get('/:id', authenticate, async (req: Request, res: Response) => {
   try {
