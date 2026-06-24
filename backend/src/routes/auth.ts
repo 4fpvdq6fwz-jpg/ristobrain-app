@@ -168,6 +168,48 @@ router.put('/password', authenticate, async (req: Request, res: Response) => {
   }
 });
 
+// GET /auth/admin/stats — riservato agli account master: panoramica registrazioni e utilizzo
+router.get('/admin/stats', authenticate, async (req: Request, res: Response) => {
+  try {
+    if (!config.masterEmails.includes((req.user!.email || '').toLowerCase())) {
+      return res.status(403).json({ error: 'Accesso riservato' });
+    }
+    const accounts = await query<any>(
+      `SELECT u.id, u.email, u.full_name, u.created_at,
+        w.id AS workspace_id, w.name AS workspace_name, w.plan,
+        (SELECT COUNT(*) FROM ingredients i WHERE i.workspace_id = w.id AND i.deleted_at IS NULL) AS ingredients,
+        (SELECT COUNT(*) FROM recipes r WHERE r.workspace_id = w.id AND r.deleted_at IS NULL) AS recipes,
+        (SELECT COUNT(*) FROM menus m WHERE m.workspace_id = w.id) AS menus,
+        (SELECT COUNT(*) FROM sales_periods sp WHERE sp.workspace_id = w.id) AS sales_periods
+       FROM users u
+       LEFT JOIN workspace_users wu ON wu.user_id = u.id
+       LEFT JOIN workspaces w ON w.id = wu.workspace_id
+       WHERE u.deleted_at IS NULL
+       ORDER BY u.created_at DESC`
+    );
+    const list = accounts.map((a: any) => {
+      const ing = parseInt(a.ingredients || 0);
+      const rec = parseInt(a.recipes || 0);
+      const men = parseInt(a.menus || 0);
+      const sal = parseInt(a.sales_periods || 0);
+      return {
+        id: a.id, email: a.email, fullName: a.full_name, createdAt: a.created_at,
+        workspaceName: a.workspace_name, plan: a.plan,
+        ingredients: ing, recipes: rec, menus: men, salesPeriods: sal,
+        active: (ing + rec + men + sal) > 0,
+      };
+    });
+    return res.json({
+      totalAccounts: list.length,
+      activeAccounts: list.filter((a) => a.active).length,
+      accounts: list,
+    });
+  } catch (err) {
+    console.error('Admin stats error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // DELETE /auth/account — GDPR: cancella tutti i dati dell'utente
 router.delete('/account', authenticate, async (req: Request, res: Response) => {
   try {
