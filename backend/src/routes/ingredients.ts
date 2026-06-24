@@ -21,8 +21,8 @@ router.get('/', authenticate, async (req: Request, res: Response) => {
     const { categoryId, search } = req.query;
     let sql = `
       SELECT i.*, ic.name as category_name,
-             ip.price_per_purchase_unit as current_price,
-             s.name as supplier_name
+        ip.price_per_purchase_unit as current_price,
+        s.name as supplier_name
       FROM ingredients i
       LEFT JOIN ingredient_categories ic ON ic.id = i.category_id
       LEFT JOIN ingredient_prices ip ON ip.ingredient_id = i.id
@@ -47,6 +47,37 @@ router.get('/', authenticate, async (req: Request, res: Response) => {
 
     const ingredients = await query(sql, params);
     return res.json(ingredients);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /ingredients/alerts/prices?threshold=5  -> rincari (prezzo attuale vs precedente oltre soglia %)
+router.get('/alerts/prices', authenticate, async (req: Request, res: Response) => {
+  try {
+    const threshold = parseFloat((req.query.threshold as string) || '5');
+    const rows = await query<any>(
+      `WITH ranked AS (
+        SELECT ip.ingredient_id, ip.price_per_purchase_unit AS price, ip.valid_from,
+          ROW_NUMBER() OVER (PARTITION BY ip.ingredient_id ORDER BY ip.valid_from DESC) AS rn
+        FROM ingredient_prices ip
+        JOIN ingredients i ON i.id = ip.ingredient_id
+        WHERE i.workspace_id = $1 AND i.deleted_at IS NULL AND ip.valid_from <= CURRENT_DATE
+      )
+      SELECT i.id, i.name, i.purchase_unit,
+        cur.price AS current_price, cur.valid_from AS current_from,
+        prev.price AS previous_price, prev.valid_from AS previous_from,
+        ROUND(((cur.price - prev.price) / NULLIF(prev.price,0) * 100)::numeric, 1) AS change_pct
+      FROM ranked cur
+      JOIN ranked prev ON prev.ingredient_id = cur.ingredient_id AND prev.rn = 2
+      JOIN ingredients i ON i.id = cur.ingredient_id
+      WHERE cur.rn = 1 AND prev.price > 0
+        AND ((cur.price - prev.price) / prev.price * 100) >= $2
+      ORDER BY change_pct DESC`,
+      [req.user!.workspaceId, threshold]
+    );
+    return res.json({ threshold, alerts: rows });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: 'Internal server error' });
@@ -93,7 +124,7 @@ router.post('/', authenticate, requireRoles('owner', 'admin', 'manager'), async 
     await withTransaction(async (client) => {
       await client.query(
         `INSERT INTO ingredients (id, workspace_id, category_id, code, name, purchase_unit, recipe_unit,
-         conversion_factor, waste_pct, yield_pct, primary_supplier_id)
+          conversion_factor, waste_pct, yield_pct, primary_supplier_id)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
         [id, req.user!.workspaceId, categoryId || null, code || null, name,
           purchaseUnit, recipeUnit, conversionFactor || 1,
@@ -129,7 +160,7 @@ router.put('/:id', authenticate, requireRoles('owner', 'admin', 'manager'), asyn
 
     await query(
       `UPDATE ingredients SET category_id=$1, code=$2, name=$3, purchase_unit=$4, recipe_unit=$5,
-       conversion_factor=$6, waste_pct=$7, yield_pct=$8, primary_supplier_id=$9
+        conversion_factor=$6, waste_pct=$7, yield_pct=$8, primary_supplier_id=$9
        WHERE id=$10`,
       [categoryId || null, code || null, name, purchaseUnit, recipeUnit,
         conversionFactor || 1, wastePct || 0, yieldPct || 100,
