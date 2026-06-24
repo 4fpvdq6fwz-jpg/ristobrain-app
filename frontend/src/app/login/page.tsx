@@ -103,9 +103,6 @@ export default function LoginPage() {
               <button type="submit" disabled={loading} className="btn-primary w-full mt-2">
                 {loading ? 'Accesso...' : 'Accedi'}
               </button>
-              <p className="text-center text-xs text-dark-300 mt-3">
-                Demo: chef@demo.it / demo1234
-              </p>
             </form>
           ) : (
             <form onSubmit={handleRegister} className="space-y-4">
