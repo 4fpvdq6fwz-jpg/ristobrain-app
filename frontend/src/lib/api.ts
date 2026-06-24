@@ -70,6 +70,8 @@ export const ingredientsApi = {
   delete: (id: string) => api.delete(`/ingredients/${id}`),
   addPrice: (id: string, data: any) => api.post(`/ingredients/${id}/prices`, data),
   priceAlerts: (threshold?: number) => api.get('/ingredients/alerts/prices', { params: { threshold } }),
+  restock: () => api.get('/ingredients/restock'),
+  menuAllergens: (menuId: string) => api.get('/ingredients/menu-allergens', { params: { menuId } }),
   categories: () => api.get('/ingredients/categories/list'),
 };
 
