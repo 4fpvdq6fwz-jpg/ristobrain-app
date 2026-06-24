@@ -1,16 +1,20 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import clsx from 'clsx';
 import AppLayout from '@/components/AppLayout';
 import KpiCard from '@/components/KpiCard';
 import AiAssistant from '@/components/AiAssistant';
-import { salesApi, menusApi, ingredientsApi } from '@/lib/api';
+import { salesApi, menusApi, ingredientsApi, recipesApi } from '@/lib/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { Sparkles, CheckCircle2, ChevronRight } from 'lucide-react';
 
 export default function DashboardPage() {
   const [salesData, setSalesData] = useState<any[]>([]);
   const [menus, setMenus] = useState<any[]>([]);
   const [ingredients, setIngredients] = useState<any[]>([]);
+  const [recipes, setRecipes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,10 +22,12 @@ export default function DashboardPage() {
       salesApi.list().catch(() => ({ data: [] })),
       menusApi.list().catch(() => ({ data: [] })),
       ingredientsApi.list().catch(() => ({ data: [] })),
-    ]).then(([s, m, i]) => {
+      recipesApi.list().catch(() => ({ data: [] })),
+    ]).then(([s, m, i, r]) => {
       setSalesData(s.data || []);
       setMenus(m.data || []);
       setIngredients(i.data || []);
+      setRecipes(r.data || []);
       setLoading(false);
     });
   }, []);
@@ -29,6 +35,14 @@ export default function DashboardPage() {
   const totalRevenue = salesData.reduce((s: number, p: any) => s + parseFloat(p.total_revenue || 0), 0);
   const activeMenu = menus.find((m: any) => m.is_current);
   const avgFc = activeMenu ? parseFloat(activeMenu.avg_fc_pct || 0) : 0;
+
+  const onboardingSteps = [
+    { done: ingredients.length > 0, label: 'Aggiungi i tuoi ingredienti', href: '/ingredients', icon: '🥬' },
+    { done: recipes.length > 0, label: 'Crea le ricette', href: '/recipes', icon: '📖' },
+    { done: menus.length > 0, label: 'Componi il menu', href: '/menus', icon: '🍽️' },
+    { done: salesData.length > 0, label: 'Carica le vendite', href: '/sales', icon: '🛒' },
+  ];
+  const setupComplete = onboardingSteps.every((s) => s.done);
 
   const chartData = salesData.slice(0, 6).map((p: any) => ({
     name: p.name?.replace('Novembre', 'Nov').replace('Ottobre', 'Ott') || 'Periodo',
@@ -48,6 +62,35 @@ export default function DashboardPage() {
           <div className="text-center py-20 text-dark-300">Caricamento...</div>
         ) : (
           <>
+            {/* Onboarding guidato (nuovo workspace) */}
+            {!setupComplete && (
+              <div className="card-dark mb-6 border border-brand-600/30">
+                <div className="flex items-center gap-2 mb-1">
+                  <Sparkles size={18} className="text-brand-400" />
+                  <h2 className="text-base font-semibold text-white">Primi passi su RistoBrain</h2>
+                </div>
+                <p className="text-dark-300 text-sm mb-4">Completa la configurazione per sbloccare food cost e analisi del menu.</p>
+                <div className="grid sm:grid-cols-2 gap-2">
+                  {onboardingSteps.map((s) => (
+                    <Link
+                      key={s.href}
+                      href={s.href}
+                      className={clsx(
+                        'flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-colors',
+                        s.done ? 'border-green-600/30 bg-green-500/5' : 'border-dark-600 hover:bg-dark-700'
+                      )}
+                    >
+                      <span className="text-xl">{s.icon}</span>
+                      <span className={clsx('flex-1 text-sm', s.done ? 'text-dark-300 line-through' : 'text-white')}>{s.label}</span>
+                      {s.done
+                        ? <CheckCircle2 size={18} className="text-green-400" />
+                        : <ChevronRight size={16} className="text-dark-400" />}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* KPI Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <KpiCard
