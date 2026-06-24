@@ -56,6 +56,10 @@ export async function runMigrations(): Promise<void> {
     await client.query(`ALTER TABLE ingredients ADD COLUMN IF NOT EXISTS min_stock NUMERIC DEFAULT 0`);
     console.log('✅ Allergens & stock columns ready');
 
+    // Numero di cellulare in registrazione
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT`);
+    console.log('✅ User phone column ready');
+
     // Always ensure demo account exists (ON CONFLICT DO NOTHING = safe to re-run)
     const seedPath = path.join(__dirname, 'db', 'seed.sql');
     if (fs.existsSync(seedPath)) {
