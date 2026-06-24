@@ -8,7 +8,7 @@ import { getAuth, clearAuth } from '@/lib/auth';
 import toast from 'react-hot-toast';
 import { Lock, Trash2, Download, Shield, AlertTriangle, Users } from 'lucide-react';
 
-const MASTER_EMAILS = ['chef@demo.it', 'davide.inchef@gmail.com'];
+const MASTER_EMAILS = ['chef@demo.it', 'davide.inchef@gmail.com', 'massatani.d@gmail.com'];
 
 export default function ImpostazioniPage() {
   const auth = getAuth();
