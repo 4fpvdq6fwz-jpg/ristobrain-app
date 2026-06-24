@@ -7,7 +7,7 @@ import { clearAuth, getAuth } from '@/lib/auth';
 import {
   LayoutDashboard, Package, BookOpen, UtensilsCrossed,
   TrendingUp, BarChart2, ShoppingCart, LogOut, ChevronRight,
-  MapPin, Truck, Brain, CreditCard, Settings, X, Bell
+  MapPin, Truck, Brain, CreditCard, Settings, X, Bell, PackageX, ShieldAlert
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -16,6 +16,7 @@ const navItems = [
   { href: '/ingredients', label: 'Ingredienti', icon: Package },
   { href: '/recipes', label: 'Ricette', icon: BookOpen },
   { href: '/menus', label: 'Menu', icon: UtensilsCrossed },
+  { href: '/allergeni', label: 'Allergeni', icon: ShieldAlert },
   { href: '/sales', label: 'Vendite', icon: ShoppingCart },
   { href: '/engineering', label: 'Analisi Menu', icon: BarChart2 },
   { href: '/pricing', label: 'Prezzi', icon: TrendingUp },
@@ -23,6 +24,7 @@ const navItems = [
   { href: '/ai', label: 'Consulente AI', icon: Brain },
   { href: '/locations', label: 'Locali', icon: MapPin },
   { href: '/suppliers', label: 'Fornitori', icon: Truck },
+  { href: '/scorte', label: 'Scorte & Ordini', icon: PackageX },
   { href: '/billing', label: 'Piano', icon: CreditCard },
   { href: '/impostazioni', label: 'Impostazioni', icon: Settings },
 ];
