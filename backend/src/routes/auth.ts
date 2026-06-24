@@ -82,7 +82,7 @@ router.post('/login', async (req: Request, res: Response) => {
 router.get('/me', authenticate, async (req: Request, res: Response) => {
   try {
     const user = await queryOne<any>(
-      'SELECT id, email, full_name, created_at FROM users WHERE id = $1',
+      'SELECT id, email, full_name, phone, created_at FROM users WHERE id = $1',
       [req.user!.userId]
     );
     if (!user) return res.status(404).json({ error: 'Utente non trovato' });
@@ -95,8 +95,8 @@ router.get('/me', authenticate, async (req: Request, res: Response) => {
 // POST /auth/register
 router.post('/register', async (req: Request, res: Response) => {
   try {
-    const { email, password, fullName, workspaceName } = req.body;
-    if (!email || !password || !fullName || !workspaceName) {
+    const { email, password, fullName, workspaceName, phone } = req.body;
+    if (!email || !password || !fullName || !workspaceName || !phone) {
       return res.status(400).json({ error: 'Tutti i campi sono obbligatori' });
     }
     if (password.length < 8) {
@@ -115,8 +115,8 @@ router.post('/register', async (req: Request, res: Response) => {
 
     await withTransaction(async (client) => {
       await client.query(
-        'INSERT INTO users (id, email, password_hash, full_name) VALUES ($1, $2, $3, $4)',
-        [userId, email.toLowerCase(), passwordHash, fullName]
+        'INSERT INTO users (id, email, password_hash, full_name, phone) VALUES ($1, $2, $3, $4, $5)',
+        [userId, email.toLowerCase(), passwordHash, fullName, phone]
       );
       await client.query(
         'INSERT INTO workspaces (id, name, slug, plan) VALUES ($1, $2, $3, $4)',
@@ -175,7 +175,7 @@ router.get('/admin/stats', authenticate, async (req: Request, res: Response) => 
       return res.status(403).json({ error: 'Accesso riservato' });
     }
     const accounts = await query<any>(
-      `SELECT u.id, u.email, u.full_name, u.created_at,
+      `SELECT u.id, u.email, u.full_name, u.phone, u.created_at,
         w.id AS workspace_id, w.name AS workspace_name, w.plan,
         (SELECT COUNT(*) FROM ingredients i WHERE i.workspace_id = w.id AND i.deleted_at IS NULL) AS ingredients,
         (SELECT COUNT(*) FROM recipes r WHERE r.workspace_id = w.id AND r.deleted_at IS NULL) AS recipes,
@@ -193,7 +193,7 @@ router.get('/admin/stats', authenticate, async (req: Request, res: Response) => 
       const men = parseInt(a.menus || 0);
       const sal = parseInt(a.sales_periods || 0);
       return {
-        id: a.id, email: a.email, fullName: a.full_name, createdAt: a.created_at,
+        id: a.id, email: a.email, fullName: a.full_name, phone: a.phone, createdAt: a.created_at,
         workspaceName: a.workspace_name, plan: a.plan,
         ingredients: ing, recipes: rec, menus: men, salesPeriods: sal,
         active: (ing + rec + men + sal) > 0,
@@ -206,6 +206,32 @@ router.get('/admin/stats', authenticate, async (req: Request, res: Response) => 
     });
   } catch (err) {
     console.error('Admin stats error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /auth/admin/delete-account — riservato master: soft-delete di un account (reversibile)
+router.post('/admin/delete-account', authenticate, async (req: Request, res: Response) => {
+  try {
+    if (!config.masterEmails.includes((req.user!.email || '').toLowerCase())) {
+      return res.status(403).json({ error: 'Accesso riservato' });
+    }
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ error: 'userId obbligatorio' });
+    if (userId === req.user!.userId) {
+      return res.status(400).json({ error: 'Non puoi eliminare il tuo account da qui' });
+    }
+
+    await query('UPDATE users SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL', [userId]);
+    await query(
+      `UPDATE workspaces SET deleted_at = NOW()
+       WHERE id IN (SELECT workspace_id FROM workspace_users WHERE user_id = $1 AND role = 'owner')
+         AND deleted_at IS NULL`,
+      [userId]
+    );
+    return res.json({ message: 'Account eliminato' });
+  } catch (err) {
+    console.error('Admin delete error:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
