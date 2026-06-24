@@ -60,8 +60,12 @@ INSERT INTO ingredients (id, workspace_id, category_id, code, name, purchase_uni
 ('66666666-0000-0000-0000-000000000008', '22222222-0000-0000-0000-000000000001', '55555555-0000-0000-0000-000000000004', 'ING-008', 'Branzino (500g+)', 'kg', 'g', 1000, 15, 65, NULL)
 ON CONFLICT DO NOTHING;
 
--- Prezzi ingredienti (prezzo per unita di acquisto)
+-- Prezzi ingredienti: ottobre (precedente) + novembre (corrente) per mostrare i rincari
 INSERT INTO ingredient_prices (ingredient_id, price_per_purchase_unit, valid_from) VALUES
+('66666666-0000-0000-0000-000000000001', 2.30, '2024-10-01'),
+('66666666-0000-0000-0000-000000000002', 0.60, '2024-10-01'),
+('66666666-0000-0000-0000-000000000003', 25.00, '2024-10-01'),
+('66666666-0000-0000-0000-000000000005', 11.00, '2024-10-01'),
 ('66666666-0000-0000-0000-000000000001', 2.40, '2024-11-01'),
 ('66666666-0000-0000-0000-000000000002', 0.70, '2024-11-01'),
 ('66666666-0000-0000-0000-000000000003', 28.00, '2024-11-01'),
