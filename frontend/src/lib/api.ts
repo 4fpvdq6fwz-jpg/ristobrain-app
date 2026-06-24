@@ -69,6 +69,7 @@ export const ingredientsApi = {
   update: (id: string, data: any) => api.put(`/ingredients/${id}`, data),
   delete: (id: string) => api.delete(`/ingredients/${id}`),
   addPrice: (id: string, data: any) => api.post(`/ingredients/${id}/prices`, data),
+  priceAlerts: (threshold?: number) => api.get('/ingredients/alerts/prices', { params: { threshold } }),
   categories: () => api.get('/ingredients/categories/list'),
 };
 
