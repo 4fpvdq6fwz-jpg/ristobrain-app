@@ -7,13 +7,14 @@ import { clearAuth, getAuth } from '@/lib/auth';
 import {
   LayoutDashboard, Package, BookOpen, UtensilsCrossed,
   TrendingUp, BarChart2, ShoppingCart, LogOut, ChevronRight,
-  MapPin, Truck, Brain, CreditCard, Settings, X, Bell, PackageX, ShieldAlert
+  MapPin, Truck, Brain, CreditCard, Settings, X, Bell, PackageX, ShieldAlert, FileText
 } from 'lucide-react';
 import clsx from 'clsx';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/ingredients', label: 'Ingredienti', icon: Package },
+  { href: '/fatture', label: 'Fatture', icon: FileText },
   { href: '/recipes', label: 'Ricette', icon: BookOpen },
   { href: '/menus', label: 'Menu', icon: UtensilsCrossed },
   { href: '/allergeni', label: 'Allergeni', icon: ShieldAlert },
