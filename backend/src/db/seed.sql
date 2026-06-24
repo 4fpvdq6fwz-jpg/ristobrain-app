@@ -50,15 +50,25 @@ ON CONFLICT DO NOTHING;
 
 -- Ingredienti demo
 INSERT INTO ingredients (id, workspace_id, category_id, code, name, purchase_unit, recipe_unit, conversion_factor, waste_pct, yield_pct, primary_supplier_id) VALUES
-('66666666-0000-0000-0000-000000000001', '22222222-0000-0000-0000-000000000001', '55555555-0000-0000-0000-000000000002', 'ING-001', 'Riso Carnaroli', 'kg', 'g', 1000, 0, 100, NULL),
-('66666666-0000-0000-0000-000000000002', '22222222-0000-0000-0000-000000000001', '55555555-0000-0000-0000-000000000005', 'ING-002', 'Tartufo Nero Fresco', 'g', 'g', 1, 5, 100, NULL),
+('66666666-0000-0000-0000-000000000001', '22222222-0000-0000-0000-000000000001', '55555555-0000-0000-0000-000000000002', 'ING-001', 'Riso Carnaroli', 'kg', 'g', 1000, 0, 100, '44444444-0000-0000-0000-000000000002'),
+('66666666-0000-0000-0000-000000000002', '22222222-0000-0000-0000-000000000001', '55555555-0000-0000-0000-000000000005', 'ING-002', 'Tartufo Nero Fresco', 'g', 'g', 1, 5, 100, '44444444-0000-0000-0000-000000000002'),
 ('66666666-0000-0000-0000-000000000003', '22222222-0000-0000-0000-000000000001', '55555555-0000-0000-0000-000000000001', 'ING-003', 'Fassona Piemontese', 'kg', 'g', 1000, 8, 72, '44444444-0000-0000-0000-000000000001'),
 ('66666666-0000-0000-0000-000000000004', '22222222-0000-0000-0000-000000000001', '55555555-0000-0000-0000-000000000003', 'ING-004', 'Parmigiano 36 mesi', 'kg', 'g', 1000, 0, 100, NULL),
 ('66666666-0000-0000-0000-000000000005', '22222222-0000-0000-0000-000000000001', '55555555-0000-0000-0000-000000000003', 'ING-005', 'Burro di Malga', 'kg', 'g', 1000, 0, 100, NULL),
 ('66666666-0000-0000-0000-000000000006', '22222222-0000-0000-0000-000000000001', '55555555-0000-0000-0000-000000000006', 'ING-006', 'Mascarpone', 'kg', 'g', 1000, 0, 100, NULL),
 ('66666666-0000-0000-0000-000000000007', '22222222-0000-0000-0000-000000000001', '55555555-0000-0000-0000-000000000006', 'ING-007', 'Savoiardi artigianali', 'kg', 'g', 1000, 0, 100, NULL),
-('66666666-0000-0000-0000-000000000008', '22222222-0000-0000-0000-000000000001', '55555555-0000-0000-0000-000000000004', 'ING-008', 'Branzino (500g+)', 'kg', 'g', 1000, 15, 65, NULL)
+('66666666-0000-0000-0000-000000000008', '22222222-0000-0000-0000-000000000001', '55555555-0000-0000-0000-000000000004', 'ING-008', 'Branzino (500g+)', 'kg', 'g', 1000, 15, 65, '44444444-0000-0000-0000-000000000001')
 ON CONFLICT DO NOTHING;
+
+-- Allergeni e scorte demo (UPDATE per applicarli agli ingredienti gia esistenti)
+UPDATE ingredients SET allergens = '{}',              stock_qty = 5,  min_stock = 10 WHERE id = '66666666-0000-0000-0000-000000000001';
+UPDATE ingredients SET allergens = '{}',              stock_qty = 20, min_stock = 50 WHERE id = '66666666-0000-0000-0000-000000000002';
+UPDATE ingredients SET allergens = '{}',              stock_qty = 8,  min_stock = 5  WHERE id = '66666666-0000-0000-0000-000000000003';
+UPDATE ingredients SET allergens = '{Latte}',         stock_qty = 2,  min_stock = 3  WHERE id = '66666666-0000-0000-0000-000000000004';
+UPDATE ingredients SET allergens = '{Latte}',         stock_qty = 4,  min_stock = 2  WHERE id = '66666666-0000-0000-0000-000000000005';
+UPDATE ingredients SET allergens = '{Latte}',         stock_qty = 1,  min_stock = 2  WHERE id = '66666666-0000-0000-0000-000000000006';
+UPDATE ingredients SET allergens = '{Glutine,Uova}',  stock_qty = 3,  min_stock = 2  WHERE id = '66666666-0000-0000-0000-000000000007';
+UPDATE ingredients SET allergens = '{Pesce}',         stock_qty = 0,  min_stock = 4  WHERE id = '66666666-0000-0000-0000-000000000008';
 
 -- Prezzi ingredienti: ottobre (precedente) + novembre (corrente) per mostrare i rincari
 INSERT INTO ingredient_prices (ingredient_id, price_per_purchase_unit, valid_from) VALUES
