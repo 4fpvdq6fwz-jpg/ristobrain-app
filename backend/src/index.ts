@@ -14,6 +14,7 @@ import calculationsRouter from './routes/calculations';
 import locationsRouter from './routes/locations';
 import suppliersRouter from './routes/suppliers';
 import aiRouter from './routes/ai';
+import invoicesRouter from './routes/invoices';
 import billingRouter, { stripeWebhookHandler } from './routes/billing';
 
 const app = express();
@@ -45,6 +46,7 @@ app.use('/api/calc', calculationsRouter);
 app.use('/api/locations', locationsRouter);
 app.use('/api/suppliers', suppliersRouter);
 app.use('/api/ai', aiRouter);
+app.use('/api/invoices', invoicesRouter);
 app.use('/api/billing', billingRouter);
 
 // 404 and error handlers
