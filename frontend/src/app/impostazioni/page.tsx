@@ -1,14 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
 import { authApi } from '@/lib/api';
 import { getAuth, clearAuth } from '@/lib/auth';
 import toast from 'react-hot-toast';
-import { Lock, Trash2, Download, Shield, AlertTriangle } from 'lucide-react';
+import { Lock, Trash2, Download, Shield, AlertTriangle, Users } from 'lucide-react';
+
+const MASTER_EMAILS = ['chef@demo.it', 'davide.inchef@gmail.com'];
 
 export default function ImpostazioniPage() {
   const auth = getAuth();
+  const isMaster = !!auth?.user?.email && MASTER_EMAILS.includes(auth.user.email.toLowerCase());
   const [pwdForm, setPwdForm] = useState({ current: '', newPwd: '', confirm: '' });
   const [deletePassword, setDeletePassword] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -90,6 +94,19 @@ export default function ImpostazioniPage() {
             </div>
           </div>
         </div>
+
+        {/* Pannello Master (solo account master) */}
+        {isMaster && (
+          <div className="card-dark border border-brand-600/30">
+            <h2 className="text-base font-semibold text-white mb-2 flex items-center gap-2">
+              <Users size={16} className="text-brand-400" /> Pannello Master
+            </h2>
+            <p className="text-xs text-dark-300 mb-4">Vedi quanti account si sono registrati e quanti usano davvero RistoBrain.</p>
+            <Link href="/admin" className="inline-flex items-center gap-2 text-sm bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+              <Users size={15} /> Statistiche registrazioni
+            </Link>
+          </div>
+        )}
 
         {/* Cambio password */}
         <div className="card-dark">
