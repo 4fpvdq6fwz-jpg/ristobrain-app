@@ -13,4 +13,6 @@ export const config = {
   stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
   stripeProPriceId: process.env.STRIPE_PRO_PRICE_ID || '',
+  masterEmails: (process.env.MASTER_EMAILS || 'chef@demo.it,davide.inchef@gmail.com')
+    .split(',').map((e) => e.trim().toLowerCase()).filter(Boolean),
 };
