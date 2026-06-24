@@ -7,7 +7,7 @@ import { clearAuth, getAuth } from '@/lib/auth';
 import {
   LayoutDashboard, Package, BookOpen, UtensilsCrossed,
   TrendingUp, BarChart2, ShoppingCart, LogOut, ChevronRight,
-  MapPin, Truck, Brain, CreditCard, Settings, X
+  MapPin, Truck, Brain, CreditCard, Settings, X, Bell
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -19,6 +19,7 @@ const navItems = [
   { href: '/sales', label: 'Vendite', icon: ShoppingCart },
   { href: '/engineering', label: 'Analisi Menu', icon: BarChart2 },
   { href: '/pricing', label: 'Prezzi', icon: TrendingUp },
+  { href: '/avvisi', label: 'Avvisi prezzi', icon: Bell },
   { href: '/ai', label: 'Consulente AI', icon: Brain },
   { href: '/locations', label: 'Locali', icon: MapPin },
   { href: '/suppliers', label: 'Fornitori', icon: Truck },
@@ -58,7 +59,7 @@ export default function Sidebar({ open = false, onClose }: { open?: boolean; onC
               <h1 className="font-bold text-white text-lg leading-none">
                 <span className="text-brand-500">Risto</span>Brain
               </h1>
-              <p className="text-xs text-dark-300 mt-0.5">{auth?.workspace?.name || ' '}</p>
+              <p className="text-xs text-dark-300 mt-0.5">{auth?.workspace?.name || ' '}</p>
             </div>
           </div>
           <button onClick={onClose} className="md:hidden text-dark-300 hover:text-white" aria-label="Chiudi menu">
@@ -100,8 +101,8 @@ export default function Sidebar({ open = false, onClose }: { open?: boolean; onC
               {auth?.user?.fullName?.[0] || '?'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{auth?.user?.fullName || ' '}</p>
-              <p className="text-xs text-dark-300 capitalize">{auth?.workspace?.role || ' '}</p>
+              <p className="text-sm font-medium text-white truncate">{auth?.user?.fullName || ' '}</p>
+              <p className="text-xs text-dark-300 capitalize">{auth?.workspace?.role || ' '}</p>
             </div>
             <LogOut size={15} className="text-dark-300 group-hover:text-red-400 transition-colors" />
           </div>
