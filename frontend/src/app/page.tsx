@@ -163,20 +163,28 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-white/10 mt-8">
-        <div className="max-w-6xl mx-auto px-5 py-10 text-sm text-white/50 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 font-semibold text-white/80">
-            <Brain className="text-orange-500" size={18} /> RistoBrain
+        <div className="max-w-6xl mx-auto px-5 py-10">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-2 font-semibold text-white/80">
+              <Brain className="text-orange-500" size={18} /> RistoBrain
+            </div>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-white/60">
+              <Link href="/login" className="hover:text-white transition-colors">Accedi</Link>
+              <Link href="/login?tab=register" className="hover:text-white transition-colors">Registrati</Link>
+              <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+              <Link href="/termini" className="hover:text-white transition-colors">Termini</Link>
+              <Link href="/cookie" className="hover:text-white transition-colors">Cookie</Link>
+            </div>
           </div>
-          <p className="text-center">
+          <p className="text-sm text-white/40 mt-6">
             Software per food cost, menu engineering, allergeni e gestione ristorante.
           </p>
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="hover:text-white transition-colors">Accedi</Link>
-            <Link href="/login?tab=register" className="hover:text-white transition-colors">Registrati</Link>
-          </div>
-        </div>
-        <div className="text-center text-xs text-white/30 pb-8">
-          &copy; {new Date().getFullYear()} RistoBrain. Tutti i diritti riservati.
+          <p className="text-xs text-white/30 mt-4">
+            RistoBrain e un servizio di [Ragione Sociale] - P.IVA [P.IVA] - [Indirizzo] - davide.inchef@gmail.com
+          </p>
+          <p className="text-xs text-white/30 mt-2">
+            &copy; {new Date().getFullYear()} RistoBrain. Tutti i diritti riservati.
+          </p>
         </div>
       </footer>
     </main>
