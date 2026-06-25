@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
+import CookieBanner from '@/components/CookieBanner';
 
 const SITE_URL = 'https://app.ristobrain.com';
 
@@ -74,6 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="it">
       <body className="antialiased">
         {children}
+        <CookieBanner />
         <Toaster
           position="top-right"
           toastOptions={{
