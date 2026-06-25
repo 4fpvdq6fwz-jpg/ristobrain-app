@@ -60,6 +60,13 @@ export async function runMigrations(): Promise<void> {
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT`);
     console.log('✅ User phone column ready');
 
+    // Verifica email e reset password
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT FALSE`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token TEXT`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token TEXT`);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMPTZ`);
+    console.log('✅ Email verification & password reset columns ready');
+
     // Always ensure demo account exists (ON CONFLICT DO NOTHING = safe to re-run)
     const seedPath = path.join(__dirname, 'db', 'seed.sql');
     if (fs.existsSync(seedPath)) {
