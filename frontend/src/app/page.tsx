@@ -10,6 +10,7 @@ import {
   ArrowRight,
   Check,
   Brain,
+  Sparkles,
 } from 'lucide-react';
 import DemoButton from '@/components/DemoButton';
 
@@ -109,6 +110,36 @@ export default function Home() {
               <p className="text-sm text-white/60 leading-relaxed">{f.desc}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Consulente AI */}
+      <section className="max-w-5xl mx-auto px-5 py-16">
+        <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-8 md:p-10 flex flex-col md:flex-row items-center gap-8">
+          <div className="flex-1">
+            <div className="inline-flex items-center gap-2 text-xs font-medium text-orange-300 bg-orange-500/10 border border-orange-500/20 rounded-full px-3 py-1 mb-4">
+              <Sparkles size={13} /> Consulente AI
+            </div>
+            <h2 className="text-3xl font-bold mb-3">Una consulenza esperta, sempre con te</h2>
+            <p className="text-white/70 leading-relaxed mb-4">
+              RistoBrain non si ferma ai numeri: analizza i dati reali del tuo ristorante e ti dà consigli concreti
+              per abbassare il food cost e aumentare i margini, con l&apos;approccio e la metodologia di un consulente di ristorazione esperto.
+            </p>
+            <ul className="space-y-2 text-sm text-white/70">
+              <li className="flex items-center gap-2"><Check size={15} className="text-orange-400 shrink-0" /> Cosa promuovere e cosa togliere dal menu</li>
+              <li className="flex items-center gap-2"><Check size={15} className="text-orange-400 shrink-0" /> Dove tagliare i costi senza perdere qualità</li>
+              <li className="flex items-center gap-2"><Check size={15} className="text-orange-400 shrink-0" /> Il prezzo giusto per ogni piatto</li>
+            </ul>
+          </div>
+          <div className="w-full md:w-80 shrink-0 rounded-2xl border border-white/10 bg-[#1a1a1a] p-5">
+            <div className="flex items-center gap-2 mb-4 text-sm font-semibold"><Brain size={16} className="text-orange-400" /> Consulente AI</div>
+            <div className="space-y-3 text-sm">
+              <div className="ml-6 bg-white/5 rounded-2xl rounded-tr-sm px-3 py-2 text-white/80">Come posso abbassare il food cost?</div>
+              <div className="mr-6 bg-orange-500/10 border border-orange-500/15 rounded-2xl rounded-tl-sm px-3 py-2 text-white/80">
+                Il tuo food cost medio è 32%. Rivedi il prezzo di 3 piatti e cambia fornitore sulla carne: torni sotto il 30%.
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
