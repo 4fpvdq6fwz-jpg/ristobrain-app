@@ -101,6 +101,9 @@ export default function LoginPage() {
                 <input name="password" type="password" value={form.password} onChange={handleChange}
                   className="input-dark" placeholder="••••••••" required />
               </div>
+              <div className="text-right -mt-2">
+                <a href="/recupera-password" className="text-xs text-brand-400 hover:underline">Password dimenticata?</a>
+              </div>
               <button type="submit" disabled={loading} className="btn-primary w-full mt-2">
                 {loading ? 'Accesso...' : 'Accedi'}
               </button>
