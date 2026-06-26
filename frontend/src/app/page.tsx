@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
   Calculator,
@@ -11,6 +12,13 @@ import {
   Brain,
 } from 'lucide-react';
 import AuthRedirect from '@/components/AuthRedirect';
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: '/',
+    languages: { 'it-IT': '/', 'en-US': '/en' },
+  },
+};
 
 const features = [
   {
@@ -64,6 +72,7 @@ export default function Home() {
             <span>RistoBrain</span>
           </div>
           <nav className="flex items-center gap-3 text-sm">
+            <Link href="/en" className="px-2 py-2 text-white/60 hover:text-white transition-colors" aria-label="English">EN</Link>
             <Link href="/login" className="px-3 py-2 text-white/80 hover:text-white transition-colors">
               Accedi
             </Link>
@@ -169,6 +178,7 @@ export default function Home() {
               <Brain className="text-orange-500" size={18} /> RistoBrain
             </div>
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-white/60">
+              <Link href="/en" className="hover:text-white transition-colors">English</Link>
               <Link href="/login" className="hover:text-white transition-colors">Accedi</Link>
               <Link href="/login?tab=register" className="hover:text-white transition-colors">Registrati</Link>
               <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
