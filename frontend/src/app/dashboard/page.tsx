@@ -8,7 +8,7 @@ import KpiCard from '@/components/KpiCard';
 import AiAssistant from '@/components/AiAssistant';
 import { salesApi, menusApi, ingredientsApi, recipesApi } from '@/lib/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Sparkles, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Sparkles, CheckCircle2, ChevronRight, Zap } from 'lucide-react';
 
 export default function DashboardPage() {
   const [salesData, setSalesData] = useState<any[]>([]);
@@ -70,6 +70,23 @@ export default function DashboardPage() {
                   <h2 className="text-base font-semibold text-white">Primi passi su RistoBrain</h2>
                 </div>
                 <p className="text-dark-300 text-sm mb-4">Completa la configurazione per sbloccare food cost e analisi del menu.</p>
+
+                {/* Percorso veloce: carica una fattura */}
+                <Link
+                  href="/fatture"
+                  className="flex items-center gap-3 px-4 py-3 mb-4 rounded-lg bg-brand-500/10 border border-brand-500/30 hover:bg-brand-500/15 transition-colors"
+                >
+                  <span className="w-9 h-9 rounded-lg bg-brand-500/20 flex items-center justify-center shrink-0">
+                    <Zap size={18} className="text-brand-400" />
+                  </span>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-white">Percorso veloce: carica una fattura</p>
+                    <p className="text-xs text-dark-300">Ingredienti e prezzi pronti in automatico: vedi il food cost in pochi minuti.</p>
+                  </div>
+                  <ChevronRight size={16} className="text-brand-400" />
+                </Link>
+
+                <p className="text-xs text-dark-400 mb-2">Oppure procedi passo per passo:</p>
                 <div className="grid sm:grid-cols-2 gap-2">
                   {onboardingSteps.map((s) => (
                     <Link
