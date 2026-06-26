@@ -10,6 +10,7 @@ import {
   ArrowRight,
   Check,
   Brain,
+  Sparkles,
 } from 'lucide-react';
 
 const SITE_URL = 'https://app.ristobrain.com';
@@ -124,6 +125,36 @@ export default function HomeEn() {
               <p className="text-sm text-white/60 leading-relaxed">{f.desc}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* AI Advisor */}
+      <section className="max-w-5xl mx-auto px-5 py-16">
+        <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-8 md:p-10 flex flex-col md:flex-row items-center gap-8">
+          <div className="flex-1">
+            <div className="inline-flex items-center gap-2 text-xs font-medium text-orange-300 bg-orange-500/10 border border-orange-500/20 rounded-full px-3 py-1 mb-4">
+              <Sparkles size={13} /> AI Advisor
+            </div>
+            <h2 className="text-3xl font-bold mb-3">Expert advice, always by your side</h2>
+            <p className="text-white/70 leading-relaxed mb-4">
+              RistoBrain goes beyond numbers: it analyzes your restaurant&apos;s real data and gives concrete advice
+              to lower food cost and grow margins, with the approach and methodology of an experienced restaurant consultant.
+            </p>
+            <ul className="space-y-2 text-sm text-white/70">
+              <li className="flex items-center gap-2"><Check size={15} className="text-orange-400 shrink-0" /> What to promote and what to drop from the menu</li>
+              <li className="flex items-center gap-2"><Check size={15} className="text-orange-400 shrink-0" /> Where to cut costs without losing quality</li>
+              <li className="flex items-center gap-2"><Check size={15} className="text-orange-400 shrink-0" /> The right price for every dish</li>
+            </ul>
+          </div>
+          <div className="w-full md:w-80 shrink-0 rounded-2xl border border-white/10 bg-[#1a1a1a] p-5">
+            <div className="flex items-center gap-2 mb-4 text-sm font-semibold"><Brain size={16} className="text-orange-400" /> AI Advisor</div>
+            <div className="space-y-3 text-sm">
+              <div className="ml-6 bg-white/5 rounded-2xl rounded-tr-sm px-3 py-2 text-white/80">How can I lower my food cost?</div>
+              <div className="mr-6 bg-orange-500/10 border border-orange-500/15 rounded-2xl rounded-tl-sm px-3 py-2 text-white/80">
+                Your average food cost is 32%. Adjust the price of 3 dishes and switch your meat supplier: you get back under 30%.
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
