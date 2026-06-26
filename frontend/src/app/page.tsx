@@ -12,6 +12,7 @@ import {
   Brain,
 } from 'lucide-react';
 import AuthRedirect from '@/components/AuthRedirect';
+import DemoButton from '@/components/DemoButton';
 
 export const metadata: Metadata = {
   alternates: {
@@ -21,42 +22,30 @@ export const metadata: Metadata = {
 };
 
 const features = [
-  {
-    icon: Calculator,
-    title: 'Food Cost automatico',
-    desc: 'Calcola il costo di ogni piatto partendo dalle ricette e dai prezzi reali dei fornitori, sempre aggiornato.',
-  },
-  {
-    icon: TrendingUp,
-    title: 'Menu Engineering',
-    desc: 'Classifica i piatti nei quadranti Star, Plowhorse, Puzzle e Dog e scopri dove aumentare i margini.',
-  },
-  {
-    icon: ShieldAlert,
-    title: 'Allergeni & HACCP',
-    desc: 'Gestisci i 14 allergeni per ogni piatto e genera la documentazione a norma in un clic.',
-  },
-  {
-    icon: PackageX,
-    title: 'Scorte & Ordini',
-    desc: 'Tieni sotto controllo le giacenze e ricevi la lista di riordino divisa per fornitore.',
-  },
-  {
-    icon: Bell,
-    title: 'Avvisi prezzi',
-    desc: 'Ti avvisiamo quando il prezzo di un ingrediente sale e intacca la marginalita dei tuoi piatti.',
-  },
-  {
-    icon: Smartphone,
-    title: 'Mobile & PWA',
-    desc: 'Usa RistoBrain da telefono, tablet o computer. Installa la app sul tuo dispositivo senza store.',
-  },
+  { icon: Calculator, title: 'Food Cost automatico', desc: 'Calcola il costo di ogni piatto partendo dalle ricette e dai prezzi reali dei fornitori, sempre aggiornato.' },
+  { icon: TrendingUp, title: 'Menu Engineering', desc: 'Classifica i piatti nei quadranti Star, Plowhorse, Puzzle e Dog e scopri dove aumentare i margini.' },
+  { icon: ShieldAlert, title: 'Allergeni & HACCP', desc: 'Gestisci i 14 allergeni per ogni piatto e genera la documentazione a norma in un clic.' },
+  { icon: PackageX, title: 'Scorte & Ordini', desc: 'Tieni sotto controllo le giacenze e ricevi la lista di riordino divisa per fornitore.' },
+  { icon: Bell, title: 'Avvisi prezzi', desc: "Ti avvisiamo quando il prezzo di un ingrediente sale e intacca la marginalità dei tuoi piatti." },
+  { icon: Smartphone, title: 'Mobile & PWA', desc: "Usa RistoBrain da telefono, tablet o computer. Installa l'app sul tuo dispositivo senza store." },
 ];
 
 const steps = [
   { n: '1', title: 'Inserisci ingredienti e ricette', desc: 'Carica i tuoi ingredienti con i prezzi dei fornitori e componi le ricette dei piatti.' },
   { n: '2', title: 'Aggiungi le vendite', desc: 'Importa o inserisci i dati di vendita per periodo e lascia che RistoBrain faccia i calcoli.' },
-  { n: '3', title: 'Ottimizza il menu', desc: 'Leggi food cost, marginalita e quadranti di menu engineering e decidi dove agire.' },
+  { n: '3', title: 'Ottimizza il menu', desc: 'Leggi food cost, marginalità e quadranti di menu engineering e decidi dove agire.' },
+];
+
+const freeFeatures = ['1 locale', 'Fino a 30 ricette', 'Fino a 50 ingredienti', 'Caricamento fatture', 'AI Consulente base'];
+const proFeatures = ['Tutto del piano Free', 'Locali illimitati', 'Ricette e ingredienti illimitati', 'AI Consulente avanzato', 'Menu engineering professionale', 'Analisi food cost avanzate', 'Supporto prioritario'];
+
+const faqs = [
+  { q: 'Come calcola RistoBrain il food cost?', a: "Parte dal costo reale degli ingredienti (i prezzi dei tuoi fornitori) e dalle quantità nelle ricette, considerando sprechi e rese. Puoi aggiornare i prezzi anche caricando le fatture." },
+  { q: 'Devo installare qualcosa?', a: "No. RistoBrain funziona dal browser su qualsiasi dispositivo. Puoi anche installarlo come app (PWA) su telefono e tablet, senza passare da uno store." },
+  { q: 'Posso caricare le fatture dei fornitori?', a: "Sì. Carichi la fattura elettronica XML oppure un PDF o una foto, e il sistema estrae ingredienti e prezzi in automatico." },
+  { q: 'I miei dati sono al sicuro?', a: "Sì: password cifrate, connessioni protette e la possibilità di esportare o cancellare i tuoi dati in qualsiasi momento." },
+  { q: 'Posso provarlo gratis?', a: "Sì, esiste un piano gratuito senza carta di credito. Puoi anche provare subito la demo con dati di esempio." },
+  { q: 'Come funziona il piano Pro?', a: "49€ al mese: locali, ricette e ingredienti illimitati, AI avanzata e supporto prioritario. Puoi disdire quando vuoi." },
 ];
 
 export default function Home() {
@@ -73,13 +62,9 @@ export default function Home() {
           </div>
           <nav className="flex items-center gap-3 text-sm">
             <Link href="/en" className="px-2 py-2 text-white/60 hover:text-white transition-colors" aria-label="English">EN</Link>
-            <Link href="/login" className="px-3 py-2 text-white/80 hover:text-white transition-colors">
-              Accedi
-            </Link>
-            <Link
-              href="/login?tab=register"
-              className="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 font-medium transition-colors"
-            >
+            <a href="#prezzi" className="hidden sm:block px-3 py-2 text-white/80 hover:text-white transition-colors">Prezzi</a>
+            <Link href="/login" className="px-3 py-2 text-white/80 hover:text-white transition-colors">Accedi</Link>
+            <Link href="/login?tab=register" className="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 font-medium transition-colors">
               Prova gratis
             </Link>
           </nav>
@@ -99,18 +84,10 @@ export default function Home() {
           e ti aiuta a gestire allergeni, scorte e prezzi. Tutto in una sola piattaforma, anche da mobile.
         </p>
         <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link
-            href="/login?tab=register"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-orange-500 hover:bg-orange-600 font-semibold transition-colors"
-          >
+          <Link href="/login?tab=register" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-orange-500 hover:bg-orange-600 font-semibold transition-colors">
             Crea il tuo account gratuito <ArrowRight size={18} />
           </Link>
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-white/15 hover:border-white/30 text-white/90 font-semibold transition-colors"
-          >
-            Accedi
-          </Link>
+          <DemoButton />
         </div>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-white/50">
           <span className="inline-flex items-center gap-1.5"><Check size={15} className="text-orange-400" /> Nessuna carta richiesta</span>
@@ -144,11 +121,67 @@ export default function Home() {
         <div className="grid md:grid-cols-3 gap-6">
           {steps.map((s) => (
             <div key={s.n} className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-              <div className="w-9 h-9 rounded-full bg-orange-500 text-white font-bold flex items-center justify-center mb-4">
-                {s.n}
-              </div>
+              <div className="w-9 h-9 rounded-full bg-orange-500 text-white font-bold flex items-center justify-center mb-4">{s.n}</div>
               <h3 className="font-semibold text-lg mb-2">{s.title}</h3>
               <p className="text-sm text-white/60 leading-relaxed">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="prezzi" className="max-w-4xl mx-auto px-5 py-16">
+        <h2 className="text-3xl font-bold text-center mb-3">Prezzi semplici e trasparenti</h2>
+        <p className="text-center text-white/60 max-w-2xl mx-auto mb-12">
+          Inizia gratis, passa a Pro quando vuoi. Nessun vincolo, disdici quando vuoi.
+        </p>
+        <div className="grid md:grid-cols-2 gap-5">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
+            <h3 className="font-bold text-lg">Free</h3>
+            <div className="flex items-baseline gap-1 mt-1 mb-5">
+              <span className="text-4xl font-extrabold">0€</span>
+              <span className="text-white/50 text-sm">/mese</span>
+            </div>
+            <ul className="space-y-2 mb-6">
+              {freeFeatures.map((f) => (
+                <li key={f} className="flex items-center gap-2 text-sm text-white/70">
+                  <Check size={15} className="text-white/40 shrink-0" /> {f}
+                </li>
+              ))}
+            </ul>
+            <Link href="/login?tab=register" className="block text-center py-2.5 rounded-lg border border-white/15 hover:border-white/30 text-white/90 font-semibold text-sm transition-colors">
+              Inizia gratis
+            </Link>
+          </div>
+          <div className="rounded-2xl border border-orange-500/40 bg-orange-500/[0.06] p-6 relative">
+            <span className="absolute -top-3 left-6 text-xs bg-orange-500 text-white px-3 py-1 rounded-full font-semibold">Consigliato</span>
+            <h3 className="font-bold text-lg">Pro</h3>
+            <div className="flex items-baseline gap-1 mt-1 mb-5">
+              <span className="text-4xl font-extrabold">49€</span>
+              <span className="text-white/50 text-sm">/mese</span>
+            </div>
+            <ul className="space-y-2 mb-6">
+              {proFeatures.map((f) => (
+                <li key={f} className="flex items-center gap-2 text-sm text-white/80">
+                  <Check size={15} className="text-orange-400 shrink-0" /> {f}
+                </li>
+              ))}
+            </ul>
+            <Link href="/login?tab=register" className="block text-center py-2.5 rounded-lg bg-orange-500 hover:bg-orange-600 font-semibold text-sm transition-colors">
+              Passa a Pro
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="max-w-3xl mx-auto px-5 py-16">
+        <h2 className="text-3xl font-bold text-center mb-12">Domande frequenti</h2>
+        <div className="space-y-4">
+          {faqs.map((f) => (
+            <div key={f.q} className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
+              <h3 className="font-semibold mb-2">{f.q}</h3>
+              <p className="text-sm text-white/60 leading-relaxed">{f.a}</p>
             </div>
           ))}
         </div>
@@ -161,10 +194,7 @@ export default function Home() {
           <p className="text-white/70 max-w-xl mx-auto mb-8">
             Bastano pochi minuti per inserire le prime ricette e vedere subito il food cost dei tuoi piatti.
           </p>
-          <Link
-            href="/login?tab=register"
-            className="inline-flex items-center gap-2 px-7 py-3 rounded-lg bg-orange-500 hover:bg-orange-600 font-semibold transition-colors"
-          >
+          <Link href="/login?tab=register" className="inline-flex items-center gap-2 px-7 py-3 rounded-lg bg-orange-500 hover:bg-orange-600 font-semibold transition-colors">
             Crea il tuo account gratuito <ArrowRight size={18} />
           </Link>
         </div>
@@ -190,7 +220,7 @@ export default function Home() {
             Software per food cost, menu engineering, allergeni e gestione ristorante.
           </p>
           <p className="text-xs text-white/30 mt-4">
-            RistoBrain e un servizio di [Ragione Sociale] - P.IVA [P.IVA] - [Indirizzo] - davide.inchef@gmail.com
+            RistoBrain è un servizio di [Ragione Sociale] - P.IVA [P.IVA] - [Indirizzo] - davide.inchef@gmail.com
           </p>
           <p className="text-xs text-white/30 mt-2">
             &copy; {new Date().getFullYear()} RistoBrain. Tutti i diritti riservati.
