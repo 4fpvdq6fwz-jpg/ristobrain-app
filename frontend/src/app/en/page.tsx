@@ -11,7 +11,6 @@ import {
   Check,
   Brain,
 } from 'lucide-react';
-import AuthRedirect from '@/components/AuthRedirect';
 
 const SITE_URL = 'https://app.ristobrain.com';
 
@@ -35,36 +34,12 @@ export const metadata: Metadata = {
 };
 
 const features = [
-  {
-    icon: Calculator,
-    title: 'Automatic Food Cost',
-    desc: 'Calculate the cost of every dish from your recipes and real supplier prices, always up to date.',
-  },
-  {
-    icon: TrendingUp,
-    title: 'Menu Engineering',
-    desc: 'Classify dishes into Star, Plowhorse, Puzzle and Dog quadrants and find where to grow your margins.',
-  },
-  {
-    icon: ShieldAlert,
-    title: 'Allergens & HACCP',
-    desc: 'Manage the 14 allergens for every dish and generate compliant documentation in one click.',
-  },
-  {
-    icon: PackageX,
-    title: 'Stock & Orders',
-    desc: 'Keep your stock under control and get a reorder list grouped by supplier.',
-  },
-  {
-    icon: Bell,
-    title: 'Price alerts',
-    desc: 'We alert you when an ingredient price rises and starts eating into your margins.',
-  },
-  {
-    icon: Smartphone,
-    title: 'Mobile & PWA',
-    desc: 'Use RistoBrain on your phone, tablet or computer. Install the app on your device without a store.',
-  },
+  { icon: Calculator, title: 'Automatic Food Cost', desc: 'Calculate the cost of every dish from your recipes and real supplier prices, always up to date.' },
+  { icon: TrendingUp, title: 'Menu Engineering', desc: 'Classify dishes into Star, Plowhorse, Puzzle and Dog quadrants and find where to grow your margins.' },
+  { icon: ShieldAlert, title: 'Allergens & HACCP', desc: 'Manage the 14 allergens for every dish and generate compliant documentation in one click.' },
+  { icon: PackageX, title: 'Stock & Orders', desc: 'Keep your stock under control and get a reorder list grouped by supplier.' },
+  { icon: Bell, title: 'Price alerts', desc: 'We alert you when an ingredient price rises and starts eating into your margins.' },
+  { icon: Smartphone, title: 'Mobile & PWA', desc: 'Use RistoBrain on your phone, tablet or computer. Install the app on your device without a store.' },
 ];
 
 const steps = [
@@ -73,11 +48,21 @@ const steps = [
   { n: '3', title: 'Optimize your menu', desc: 'Read food cost, margins and menu engineering quadrants and decide where to act.' },
 ];
 
+const freeFeatures = ['1 location', 'Up to 30 recipes', 'Up to 50 ingredients', 'Invoice upload', 'Basic AI advisor'];
+const proFeatures = ['Everything in Free', 'Unlimited locations', 'Unlimited recipes and ingredients', 'Advanced AI advisor', 'Professional menu engineering', 'Advanced food cost analytics', 'Priority support'];
+
+const faqs = [
+  { q: 'How does RistoBrain calculate food cost?', a: 'It starts from the real cost of ingredients (your supplier prices) and the quantities in your recipes, accounting for waste and yield. You can also update prices by uploading invoices.' },
+  { q: 'Do I need to install anything?', a: 'No. RistoBrain runs in the browser on any device. You can also install it as an app (PWA) on phone and tablet, without an app store.' },
+  { q: 'Can I upload supplier invoices?', a: 'Yes. Upload the electronic XML invoice or a PDF or photo, and the system extracts ingredients and prices automatically.' },
+  { q: 'Is my data safe?', a: 'Yes: encrypted passwords, secure connections and the ability to export or delete your data at any time.' },
+  { q: 'Can I try it for free?', a: 'Yes, there is a free plan with no credit card required. You can also try the live demo with sample data right away.' },
+  { q: 'How does the Pro plan work?', a: '49€ per month: unlimited locations, recipes and ingredients, advanced AI and priority support. Cancel anytime.' },
+];
+
 export default function HomeEn() {
   return (
     <main className="min-h-screen bg-[#0f0f0f] text-white">
-      <AuthRedirect />
-
       {/* Nav */}
       <header className="border-b border-white/10">
         <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
@@ -87,13 +72,9 @@ export default function HomeEn() {
           </div>
           <nav className="flex items-center gap-3 text-sm">
             <Link href="/" className="px-2 py-2 text-white/60 hover:text-white transition-colors" aria-label="Italiano">IT</Link>
-            <Link href="/login" className="px-3 py-2 text-white/80 hover:text-white transition-colors">
-              Sign in
-            </Link>
-            <Link
-              href="/login?tab=register"
-              className="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 font-medium transition-colors"
-            >
+            <a href="#pricing" className="hidden sm:block px-3 py-2 text-white/80 hover:text-white transition-colors">Pricing</a>
+            <Link href="/login" className="px-3 py-2 text-white/80 hover:text-white transition-colors">Sign in</Link>
+            <Link href="/login?tab=register" className="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 font-medium transition-colors">
               Try for free
             </Link>
           </nav>
@@ -113,16 +94,10 @@ export default function HomeEn() {
           and helps you manage allergens, stock and prices. All in one platform, even on mobile.
         </p>
         <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link
-            href="/login?tab=register"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-orange-500 hover:bg-orange-600 font-semibold transition-colors"
-          >
+          <Link href="/login?tab=register" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-orange-500 hover:bg-orange-600 font-semibold transition-colors">
             Create your free account <ArrowRight size={18} />
           </Link>
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-white/15 hover:border-white/30 text-white/90 font-semibold transition-colors"
-          >
+          <Link href="/login" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-white/15 hover:border-white/30 text-white/90 font-semibold transition-colors">
             Sign in
           </Link>
         </div>
@@ -158,11 +133,67 @@ export default function HomeEn() {
         <div className="grid md:grid-cols-3 gap-6">
           {steps.map((s) => (
             <div key={s.n} className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-              <div className="w-9 h-9 rounded-full bg-orange-500 text-white font-bold flex items-center justify-center mb-4">
-                {s.n}
-              </div>
+              <div className="w-9 h-9 rounded-full bg-orange-500 text-white font-bold flex items-center justify-center mb-4">{s.n}</div>
               <h3 className="font-semibold text-lg mb-2">{s.title}</h3>
               <p className="text-sm text-white/60 leading-relaxed">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="pricing" className="max-w-4xl mx-auto px-5 py-16">
+        <h2 className="text-3xl font-bold text-center mb-3">Simple, transparent pricing</h2>
+        <p className="text-center text-white/60 max-w-2xl mx-auto mb-12">
+          Start for free, upgrade to Pro whenever you want. No lock-in, cancel anytime.
+        </p>
+        <div className="grid md:grid-cols-2 gap-5">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
+            <h3 className="font-bold text-lg">Free</h3>
+            <div className="flex items-baseline gap-1 mt-1 mb-5">
+              <span className="text-4xl font-extrabold">0€</span>
+              <span className="text-white/50 text-sm">/month</span>
+            </div>
+            <ul className="space-y-2 mb-6">
+              {freeFeatures.map((f) => (
+                <li key={f} className="flex items-center gap-2 text-sm text-white/70">
+                  <Check size={15} className="text-white/40 shrink-0" /> {f}
+                </li>
+              ))}
+            </ul>
+            <Link href="/login?tab=register" className="block text-center py-2.5 rounded-lg border border-white/15 hover:border-white/30 text-white/90 font-semibold text-sm transition-colors">
+              Start for free
+            </Link>
+          </div>
+          <div className="rounded-2xl border border-orange-500/40 bg-orange-500/[0.06] p-6 relative">
+            <span className="absolute -top-3 left-6 text-xs bg-orange-500 text-white px-3 py-1 rounded-full font-semibold">Recommended</span>
+            <h3 className="font-bold text-lg">Pro</h3>
+            <div className="flex items-baseline gap-1 mt-1 mb-5">
+              <span className="text-4xl font-extrabold">49€</span>
+              <span className="text-white/50 text-sm">/month</span>
+            </div>
+            <ul className="space-y-2 mb-6">
+              {proFeatures.map((f) => (
+                <li key={f} className="flex items-center gap-2 text-sm text-white/80">
+                  <Check size={15} className="text-orange-400 shrink-0" /> {f}
+                </li>
+              ))}
+            </ul>
+            <Link href="/login?tab=register" className="block text-center py-2.5 rounded-lg bg-orange-500 hover:bg-orange-600 font-semibold text-sm transition-colors">
+              Go Pro
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="max-w-3xl mx-auto px-5 py-16">
+        <h2 className="text-3xl font-bold text-center mb-12">Frequently asked questions</h2>
+        <div className="space-y-4">
+          {faqs.map((f) => (
+            <div key={f.q} className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
+              <h3 className="font-semibold mb-2">{f.q}</h3>
+              <p className="text-sm text-white/60 leading-relaxed">{f.a}</p>
             </div>
           ))}
         </div>
@@ -175,10 +206,7 @@ export default function HomeEn() {
           <p className="text-white/70 max-w-xl mx-auto mb-8">
             It takes just a few minutes to add your first recipes and instantly see the food cost of your dishes.
           </p>
-          <Link
-            href="/login?tab=register"
-            className="inline-flex items-center gap-2 px-7 py-3 rounded-lg bg-orange-500 hover:bg-orange-600 font-semibold transition-colors"
-          >
+          <Link href="/login?tab=register" className="inline-flex items-center gap-2 px-7 py-3 rounded-lg bg-orange-500 hover:bg-orange-600 font-semibold transition-colors">
             Create your free account <ArrowRight size={18} />
           </Link>
         </div>
