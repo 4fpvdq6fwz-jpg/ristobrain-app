@@ -11,7 +11,6 @@ import {
   Check,
   Brain,
 } from 'lucide-react';
-import AuthRedirect from '@/components/AuthRedirect';
 import DemoButton from '@/components/DemoButton';
 
 export const metadata: Metadata = {
@@ -51,8 +50,6 @@ const faqs = [
 export default function Home() {
   return (
     <main className="min-h-screen bg-[#0f0f0f] text-white">
-      <AuthRedirect />
-
       {/* Nav */}
       <header className="border-b border-white/10">
         <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
