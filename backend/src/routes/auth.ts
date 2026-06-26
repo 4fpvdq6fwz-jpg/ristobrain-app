@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { query, queryOne, withTransaction } from '../db';
 import { config } from '../config';
 import { authenticate } from '../middleware/auth';
+import { sendEmail, verificationEmail, resetEmail } from '../mail';
 
 const router = Router();
 
@@ -82,7 +83,7 @@ router.post('/login', async (req: Request, res: Response) => {
 router.get('/me', authenticate, async (req: Request, res: Response) => {
   try {
     const user = await queryOne<any>(
-      'SELECT id, email, full_name, phone, created_at FROM users WHERE id = $1',
+      'SELECT id, email, full_name, phone, email_verified, created_at FROM users WHERE id = $1',
       [req.user!.userId]
     );
     if (!user) return res.status(404).json({ error: 'Utente non trovato' });
@@ -111,12 +112,13 @@ router.post('/register', async (req: Request, res: Response) => {
     const passwordHash = await bcrypt.hash(password, 10);
     const userId = uuidv4();
     const workspaceId = uuidv4();
+    const verificationToken = uuidv4();
     const slug = workspaceName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + userId.slice(0, 8);
 
     await withTransaction(async (client) => {
       await client.query(
-        'INSERT INTO users (id, email, password_hash, full_name, phone) VALUES ($1, $2, $3, $4, $5)',
-        [userId, email.toLowerCase(), passwordHash, fullName, phone]
+        'INSERT INTO users (id, email, password_hash, full_name, phone, verification_token) VALUES ($1, $2, $3, $4, $5, $6)',
+        [userId, email.toLowerCase(), passwordHash, fullName, phone, verificationToken]
       );
       await client.query(
         'INSERT INTO workspaces (id, name, slug, plan) VALUES ($1, $2, $3, $4)',
@@ -127,6 +129,15 @@ router.post('/register', async (req: Request, res: Response) => {
         [workspaceId, userId, 'owner']
       );
     });
+
+    // Invio email di verifica (non blocca la registrazione se fallisce)
+    try {
+      const link = `${config.appUrl}/verifica-email?token=${verificationToken}`;
+      const { subject, html } = verificationEmail(link);
+      await sendEmail({ to: email.toLowerCase(), subject, html });
+    } catch (e) {
+      console.error('Verification email error:', e);
+    }
 
     const payload = { userId, workspaceId, role: 'owner', email: email.toLowerCase(), sessionVersion: 0 };
     const token = jwt.sign(payload, config.jwtSecret, { expiresIn: config.jwtExpiresIn as any });
@@ -163,6 +174,115 @@ router.put('/password', authenticate, async (req: Request, res: Response) => {
     await query('UPDATE users SET password_hash = $1 WHERE id = $2', [newHash, req.user!.userId]);
 
     return res.json({ message: 'Password aggiornata' });
+  } catch (err) {
+    return res.status(500).json({ error: 'Errore interno' });
+  }
+});
+
+// POST /auth/forgot-password — invia email con link di reset
+router.post('/forgot-password', async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email obbligatoria' });
+
+    const user = await queryOne<any>(
+      'SELECT id, email FROM users WHERE email = $1 AND deleted_at IS NULL',
+      [email.toLowerCase()]
+    );
+
+    // Risposta sempre uguale per non rivelare se l indirizzo esiste
+    if (user) {
+      const token = uuidv4();
+      const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 ora
+      await query(
+        'UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE id = $3',
+        [token, expires.toISOString(), user.id]
+      );
+      try {
+        const link = `${config.appUrl}/reset-password?token=${token}`;
+        const { subject, html } = resetEmail(link);
+        await sendEmail({ to: user.email, subject, html });
+      } catch (e) {
+        console.error('Reset email error:', e);
+      }
+    }
+
+    return res.json({ message: 'Se l indirizzo esiste, ti abbiamo inviato le istruzioni per reimpostare la password.' });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    return res.status(500).json({ error: 'Errore interno' });
+  }
+});
+
+// POST /auth/reset-password — imposta una nuova password tramite token
+router.post('/reset-password', async (req: Request, res: Response) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) return res.status(400).json({ error: 'Token e nuova password obbligatori' });
+    if (newPassword.length < 8) return res.status(400).json({ error: 'La password deve essere di almeno 8 caratteri' });
+
+    const user = await queryOne<any>(
+      'SELECT id FROM users WHERE reset_token = $1 AND reset_token_expires > NOW() AND deleted_at IS NULL',
+      [token]
+    );
+    if (!user) return res.status(400).json({ error: 'Link non valido o scaduto' });
+
+    const hash = await bcrypt.hash(newPassword, 10);
+    await query(
+      'UPDATE users SET password_hash = $1, reset_token = NULL, reset_token_expires = NULL, session_version = session_version + 1 WHERE id = $2',
+      [hash, user.id]
+    );
+
+    return res.json({ message: 'Password reimpostata con successo' });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    return res.status(500).json({ error: 'Errore interno' });
+  }
+});
+
+// POST /auth/verify-email — conferma l indirizzo email tramite token
+router.post('/verify-email', async (req: Request, res: Response) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ error: 'Token obbligatorio' });
+
+    const user = await queryOne<any>(
+      'SELECT id FROM users WHERE verification_token = $1 AND deleted_at IS NULL',
+      [token]
+    );
+    if (!user) return res.status(400).json({ error: 'Link non valido o già usato' });
+
+    await query('UPDATE users SET email_verified = TRUE, verification_token = NULL WHERE id = $1', [user.id]);
+    return res.json({ message: 'Email confermata con successo' });
+  } catch (err) {
+    console.error('Verify email error:', err);
+    return res.status(500).json({ error: 'Errore interno' });
+  }
+});
+
+// POST /auth/resend-verification — reinvia l email di verifica all utente loggato
+router.post('/resend-verification', authenticate, async (req: Request, res: Response) => {
+  try {
+    const user = await queryOne<any>(
+      'SELECT id, email, email_verified, verification_token FROM users WHERE id = $1',
+      [req.user!.userId]
+    );
+    if (!user) return res.status(404).json({ error: 'Utente non trovato' });
+    if (user.email_verified) return res.json({ message: 'Email già confermata' });
+
+    let token = user.verification_token;
+    if (!token) {
+      token = uuidv4();
+      await query('UPDATE users SET verification_token = $1 WHERE id = $2', [token, user.id]);
+    }
+    try {
+      const link = `${config.appUrl}/verifica-email?token=${token}`;
+      const { subject, html } = verificationEmail(link);
+      await sendEmail({ to: user.email, subject, html });
+    } catch (e) {
+      console.error('Resend verification error:', e);
+    }
+    return res.json({ message: 'Email di verifica inviata' });
   } catch (err) {
     return res.status(500).json({ error: 'Errore interno' });
   }
