@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
 import CookieBanner from '@/components/CookieBanner';
+import { LanguageProvider } from '@/components/LanguageProvider';
 
 const SITE_URL = 'https://app.ristobrain.com';
 
@@ -74,8 +75,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="it">
       <body className="antialiased">
-        {children}
-        <CookieBanner />
+        <LanguageProvider>
+          {children}
+          <CookieBanner />
+        </LanguageProvider>
         <Toaster
           position="top-right"
           toastOptions={{
