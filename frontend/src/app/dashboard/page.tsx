@@ -6,11 +6,13 @@ import clsx from 'clsx';
 import AppLayout from '@/components/AppLayout';
 import KpiCard from '@/components/KpiCard';
 import AiAssistant from '@/components/AiAssistant';
+import { useLang } from '@/components/LanguageProvider';
 import { salesApi, menusApi, ingredientsApi, recipesApi } from '@/lib/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Sparkles, CheckCircle2, ChevronRight, Zap } from 'lucide-react';
 
 export default function DashboardPage() {
+  const { t, lang } = useLang();
   const [salesData, setSalesData] = useState<any[]>([]);
   const [menus, setMenus] = useState<any[]>([]);
   const [ingredients, setIngredients] = useState<any[]>([]);
@@ -37,10 +39,10 @@ export default function DashboardPage() {
   const avgFc = activeMenu ? parseFloat(activeMenu.avg_fc_pct || 0) : 0;
 
   const onboardingSteps = [
-    { done: ingredients.length > 0, label: 'Aggiungi i tuoi ingredienti', href: '/ingredients', icon: '🥬' },
-    { done: recipes.length > 0, label: 'Crea le ricette', href: '/recipes', icon: '📖' },
-    { done: menus.length > 0, label: 'Componi il menu', href: '/menus', icon: '🍽️' },
-    { done: salesData.length > 0, label: 'Carica le vendite', href: '/sales', icon: '🛒' },
+    { done: ingredients.length > 0, labelKey: 'dashboard.stepIngredients', href: '/ingredients', icon: '🥬' },
+    { done: recipes.length > 0, labelKey: 'dashboard.stepRecipes', href: '/recipes', icon: '📖' },
+    { done: menus.length > 0, labelKey: 'dashboard.stepMenus', href: '/menus', icon: '🍽️' },
+    { done: salesData.length > 0, labelKey: 'dashboard.stepSales', href: '/sales', icon: '🛒' },
   ];
   const setupComplete = onboardingSteps.every((s) => s.done);
 
@@ -54,12 +56,12 @@ export default function DashboardPage() {
     <AppLayout>
       <div className="max-w-6xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-          <p className="text-dark-200 text-sm mt-1">Panoramica del tuo ristorante</p>
+          <h1 className="text-2xl font-bold text-white">{t('dashboard.title')}</h1>
+          <p className="text-dark-200 text-sm mt-1">{t('dashboard.subtitle')}</p>
         </div>
 
         {loading ? (
-          <div className="text-center py-20 text-dark-300">Caricamento...</div>
+          <div className="text-center py-20 text-dark-300">{t('common.loading')}</div>
         ) : (
           <>
             {/* Onboarding guidato (nuovo workspace) */}
@@ -67,9 +69,9 @@ export default function DashboardPage() {
               <div className="card-dark mb-6 border border-brand-600/30">
                 <div className="flex items-center gap-2 mb-1">
                   <Sparkles size={18} className="text-brand-400" />
-                  <h2 className="text-base font-semibold text-white">Primi passi su RistoBrain</h2>
+                  <h2 className="text-base font-semibold text-white">{t('dashboard.onboardingTitle')}</h2>
                 </div>
-                <p className="text-dark-300 text-sm mb-4">Completa la configurazione per sbloccare food cost e analisi del menu.</p>
+                <p className="text-dark-300 text-sm mb-4">{t('dashboard.onboardingSubtitle')}</p>
 
                 {/* Percorso veloce: carica una fattura */}
                 <Link
@@ -80,13 +82,13 @@ export default function DashboardPage() {
                     <Zap size={18} className="text-brand-400" />
                   </span>
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-white">Percorso veloce: carica una fattura</p>
-                    <p className="text-xs text-dark-300">Ingredienti e prezzi pronti in automatico: vedi il food cost in pochi minuti.</p>
+                    <p className="text-sm font-semibold text-white">{t('dashboard.fastPathTitle')}</p>
+                    <p className="text-xs text-dark-300">{t('dashboard.fastPathDesc')}</p>
                   </div>
                   <ChevronRight size={16} className="text-brand-400" />
                 </Link>
 
-                <p className="text-xs text-dark-400 mb-2">Oppure procedi passo per passo:</p>
+                <p className="text-xs text-dark-400 mb-2">{t('dashboard.orStepByStep')}</p>
                 <div className="grid sm:grid-cols-2 gap-2">
                   {onboardingSteps.map((s) => (
                     <Link
@@ -98,7 +100,7 @@ export default function DashboardPage() {
                       )}
                     >
                       <span className="text-xl">{s.icon}</span>
-                      <span className={clsx('flex-1 text-sm', s.done ? 'text-dark-300 line-through' : 'text-white')}>{s.label}</span>
+                      <span className={clsx('flex-1 text-sm', s.done ? 'text-dark-300 line-through' : 'text-white')}>{t(s.labelKey)}</span>
                       {s.done
                         ? <CheckCircle2 size={18} className="text-green-400" />
                         : <ChevronRight size={16} className="text-dark-400" />}
@@ -111,30 +113,30 @@ export default function DashboardPage() {
             {/* KPI Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <KpiCard
-                title="Revenue totale"
+                title={t('dashboard.totalRevenue')}
                 value={`€${totalRevenue.toLocaleString('it-IT', { minimumFractionDigits: 0 })}`}
-                subtitle={`${salesData.length} periodi analizzati`}
+                subtitle={`${salesData.length} ${t('dashboard.periodsAnalyzed')}`}
                 icon="💶"
                 color="green"
               />
               <KpiCard
-                title="Food Cost %"
+                title={t('dashboard.foodCost')}
                 value={avgFc > 0 ? `${avgFc.toFixed(1)}%` : 'N/D'}
-                subtitle={`Target: ≤ 30%`}
+                subtitle={`${t('dashboard.target')}: ≤ 30%`}
                 icon="📊"
                 color={avgFc > 0 && avgFc <= 30 ? 'green' : avgFc > 35 ? 'red' : 'orange'}
               />
               <KpiCard
-                title="Ingredienti"
+                title={t('dashboard.ingredients')}
                 value={ingredients.length}
-                subtitle="Nel database"
+                subtitle={t('dashboard.inDatabase')}
                 icon="🥬"
                 color="blue"
               />
               <KpiCard
-                title="Menu attivi"
+                title={t('dashboard.activeMenus')}
                 value={menus.filter((m: any) => m.is_current).length}
-                subtitle={activeMenu?.name || 'Nessun menu attivo'}
+                subtitle={activeMenu?.name || t('dashboard.noActiveMenu')}
                 icon="📋"
                 color="orange"
               />
@@ -143,7 +145,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Revenue chart */}
               <div className="card-dark">
-                <h2 className="text-base font-semibold text-white mb-4">Revenue per Periodo</h2>
+                <h2 className="text-base font-semibold text-white mb-4">{t('dashboard.revenueByPeriod')}</h2>
                 {chartData.length > 0 ? (
                   <ResponsiveContainer width="100%" height={220}>
                     <BarChart data={chartData} barCategoryGap="30%">
@@ -164,21 +166,21 @@ export default function DashboardPage() {
                   </ResponsiveContainer>
                 ) : (
                   <div className="h-52 flex items-center justify-center text-dark-300 text-sm">
-                    Nessun dato vendite. Carica i dati dalla sezione Vendite.
+                    {lang === 'en' ? 'No sales data yet. Add data from the Sales section.' : 'Nessun dato vendite. Carica i dati dalla sezione Vendite.'}
                   </div>
                 )}
               </div>
 
               {/* Quick stats */}
               <div className="card-dark">
-                <h2 className="text-base font-semibold text-white mb-4">Ultimi Periodi</h2>
+                <h2 className="text-base font-semibold text-white mb-4">{t('dashboard.lastPeriods')}</h2>
                 {salesData.length > 0 ? (
                   <div className="space-y-3">
                     {salesData.slice(0, 5).map((p: any) => (
                       <div key={p.id} className="flex items-center justify-between py-2 border-b border-dark-600 last:border-0">
                         <div>
                           <p className="text-sm font-medium text-white">{p.name}</p>
-                          <p className="text-xs text-dark-300">{p.total_covers} coperti</p>
+                          <p className="text-xs text-dark-300">{p.total_covers} {t('dashboard.covers')}</p>
                         </div>
                         <p className="text-sm font-semibold text-brand-400">
                           €{parseFloat(p.total_revenue || 0).toLocaleString('it-IT')}
@@ -189,8 +191,8 @@ export default function DashboardPage() {
                 ) : (
                   <div className="text-center py-10 text-dark-300 text-sm">
                     <div className="text-4xl mb-3">📊</div>
-                    <p>Nessun dato ancora.</p>
-                    <p>Vai su <strong>Vendite</strong> per iniziare.</p>
+                    <p>{lang === 'en' ? 'No data yet.' : 'Nessun dato ancora.'}</p>
+                    <p>{lang === 'en' ? 'Go to Sales to get started.' : 'Vai su Vendite per iniziare.'}</p>
                   </div>
                 )}
               </div>
