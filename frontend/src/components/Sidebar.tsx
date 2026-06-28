@@ -10,29 +10,32 @@ import {
   MapPin, Truck, Brain, CreditCard, Settings, X, Bell, PackageX, ShieldAlert, FileText
 } from 'lucide-react';
 import clsx from 'clsx';
+import { useLang } from './LanguageProvider';
+import LangSwitcher from './LangSwitcher';
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/ingredients', label: 'Ingredienti', icon: Package },
-  { href: '/fatture', label: 'Fatture', icon: FileText },
-  { href: '/recipes', label: 'Ricette', icon: BookOpen },
-  { href: '/menus', label: 'Menu', icon: UtensilsCrossed },
-  { href: '/allergeni', label: 'Allergeni', icon: ShieldAlert },
-  { href: '/sales', label: 'Vendite', icon: ShoppingCart },
-  { href: '/engineering', label: 'Analisi Menu', icon: BarChart2 },
-  { href: '/pricing', label: 'Prezzi', icon: TrendingUp },
-  { href: '/avvisi', label: 'Avvisi prezzi', icon: Bell },
-  { href: '/ai', label: 'Consulente AI', icon: Brain },
-  { href: '/locations', label: 'Locali', icon: MapPin },
-  { href: '/suppliers', label: 'Fornitori', icon: Truck },
-  { href: '/scorte', label: 'Scorte & Ordini', icon: PackageX },
-  { href: '/billing', label: 'Piano', icon: CreditCard },
-  { href: '/impostazioni', label: 'Impostazioni', icon: Settings },
+  { href: '/dashboard', labelKey: 'nav.dashboard', icon: LayoutDashboard },
+  { href: '/ingredients', labelKey: 'nav.ingredients', icon: Package },
+  { href: '/fatture', labelKey: 'nav.invoices', icon: FileText },
+  { href: '/recipes', labelKey: 'nav.recipes', icon: BookOpen },
+  { href: '/menus', labelKey: 'nav.menus', icon: UtensilsCrossed },
+  { href: '/allergeni', labelKey: 'nav.allergens', icon: ShieldAlert },
+  { href: '/sales', labelKey: 'nav.sales', icon: ShoppingCart },
+  { href: '/engineering', labelKey: 'nav.engineering', icon: BarChart2 },
+  { href: '/pricing', labelKey: 'nav.pricing', icon: TrendingUp },
+  { href: '/avvisi', labelKey: 'nav.priceAlerts', icon: Bell },
+  { href: '/ai', labelKey: 'nav.ai', icon: Brain },
+  { href: '/locations', labelKey: 'nav.locations', icon: MapPin },
+  { href: '/suppliers', labelKey: 'nav.suppliers', icon: Truck },
+  { href: '/scorte', labelKey: 'nav.stock', icon: PackageX },
+  { href: '/billing', labelKey: 'nav.billing', icon: CreditCard },
+  { href: '/impostazioni', labelKey: 'nav.settings', icon: Settings },
 ];
 
 export default function Sidebar({ open = false, onClose }: { open?: boolean; onClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { t } = useLang();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const auth = mounted ? getAuth() : null;
@@ -73,7 +76,7 @@ export default function Sidebar({ open = false, onClose }: { open?: boolean; onC
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 overflow-y-auto">
           <ul className="space-y-0.5">
-            {navItems.map(({ href, label, icon: Icon }) => {
+            {navItems.map(({ href, labelKey, icon: Icon }) => {
               const active = pathname === href || pathname.startsWith(href + '/');
               return (
                 <li key={href}>
@@ -88,7 +91,7 @@ export default function Sidebar({ open = false, onClose }: { open?: boolean; onC
                     )}
                   >
                     <Icon size={17} className={active ? 'text-brand-400' : 'text-dark-300 group-hover:text-white'} />
-                    {label}
+                    {t(labelKey)}
                     {active && <ChevronRight size={14} className="ml-auto text-brand-400" />}
                   </Link>
                 </li>
@@ -96,6 +99,12 @@ export default function Sidebar({ open = false, onClose }: { open?: boolean; onC
             })}
           </ul>
         </nav>
+
+        {/* Language */}
+        <div className="px-5 py-3 border-t border-dark-600 flex items-center justify-between">
+          <span className="text-xs text-dark-400">{t('common.language')}</span>
+          <LangSwitcher />
+        </div>
 
         {/* User */}
         <div className="px-3 py-4 border-t border-dark-600">
