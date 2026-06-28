@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import AppLayout from '@/components/AppLayout';
 import KpiCard from '@/components/KpiCard';
 import AiAssistant from '@/components/AiAssistant';
+import TodayPanel from '@/components/TodayPanel';
 import { useLang } from '@/components/LanguageProvider';
 import { salesApi, menusApi, ingredientsApi, recipesApi } from '@/lib/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
@@ -64,6 +65,8 @@ export default function DashboardPage() {
           <div className="text-center py-20 text-dark-300">{t('common.loading')}</div>
         ) : (
           <>
+            <TodayPanel />
+
             {/* Onboarding guidato (nuovo workspace) */}
             {!setupComplete && (
               <div className="card-dark mb-6 border border-brand-600/30">
