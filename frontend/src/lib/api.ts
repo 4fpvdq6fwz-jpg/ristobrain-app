@@ -145,3 +145,17 @@ export const suppliersApi = {
   create: (data: any) => api.post('/suppliers', data),
   update: (id: string, data: any) => api.put(`/suppliers/${id}`, data),
 };
+
+// Motore Creatività Menu
+export const creativaApi = {
+  rules: () => api.get('/creativita/rules'),
+  createRule: (data: any) => api.post('/creativita/rules', data),
+  updateRule: (id: string, data: any) => api.put(`/creativita/rules/${id}`, data),
+  deleteRule: (id: string) => api.delete(`/creativita/rules/${id}`),
+  refMenus: () => api.get('/creativita/reference-menus'),
+  createRefMenu: (data: any) => api.post('/creativita/reference-menus', data),
+  updateRefMenu: (id: string, data: any) => api.put(`/creativita/reference-menus/${id}`, data),
+  deleteRefMenu: (id: string) => api.delete(`/creativita/reference-menus/${id}`),
+  generate: (data: any) => api.post('/creativita/generate', data),
+  history: () => api.get('/creativita/generations'),
+};
