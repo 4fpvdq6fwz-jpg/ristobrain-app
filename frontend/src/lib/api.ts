@@ -58,7 +58,7 @@ export const adminApi = {
 // Billing
 export const billingApi = {
   status: () => api.get('/billing/status'),
-  createCheckout: () => api.post('/billing/checkout'),
+  createCheckout: (plan?: string) => api.post('/billing/checkout', plan ? { plan } : {}),
   createPortal: () => api.post('/billing/portal'),
 };
 
