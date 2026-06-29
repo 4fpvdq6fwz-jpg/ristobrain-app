@@ -166,7 +166,7 @@ router.post('/parse', authenticate, requireRoles('owner', 'admin', 'manager'), u
 router.post('/confirm', authenticate, requireRoles('owner', 'admin', 'manager'), async (req: Request, res: Response) => {
   try {
     const wsId = req.user!.workspaceId;
-    const userId = req.user!.id;
+    const userId = req.user!.userId;
     const validFrom: string | undefined = req.body && req.body.validFrom;
     const lines: any[] = (req.body && req.body.lines) || [];
     if (!Array.isArray(lines) || lines.length === 0) {
