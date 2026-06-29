@@ -3,10 +3,13 @@
 import { useEffect, useState } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { suppliersApi } from '@/lib/api';
+import { useLang } from '@/components/LanguageProvider';
 import toast from 'react-hot-toast';
 import { Plus, Truck, Mail, Phone } from 'lucide-react';
 
 export default function SuppliersPage() {
+  const { lang } = useLang();
+  const en = lang === 'en';
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -27,12 +30,12 @@ export default function SuppliersPage() {
     setSaving(true);
     try {
       await suppliersApi.create(form);
-      toast.success('Fornitore aggiunto!');
+      toast.success(en ? 'Supplier added!' : 'Fornitore aggiunto!');
       setShowForm(false);
       setForm({ name: '', contactName: '', email: '', phone: '', notes: '' });
       fetchData();
     } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Errore');
+      toast.error(err.response?.data?.error || (en ? 'Error' : 'Errore'));
     } finally { setSaving(false); }
   };
 
@@ -43,16 +46,16 @@ export default function SuppliersPage() {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-white">Fornitori</h1>
-            <p className="text-dark-200 text-sm mt-1">{suppliers.length} fornitori registrati</p>
+            <h1 className="text-2xl font-bold text-white">{en ? 'Suppliers' : 'Fornitori'}</h1>
+            <p className="text-dark-200 text-sm mt-1">{suppliers.length} {en ? 'registered suppliers' : 'fornitori registrati'}</p>
           </div>
           <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
-            <Plus size={16} /> Aggiungi
+            <Plus size={16} /> {en ? 'Add' : 'Aggiungi'}
           </button>
         </div>
 
         {loading ? (
-          <div className="text-center py-16 text-dark-300">Caricamento...</div>
+          <div className="text-center py-16 text-dark-300">{en ? 'Loading...' : 'Caricamento...'}</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {suppliers.map((s: any) => (
@@ -79,7 +82,7 @@ export default function SuppliersPage() {
             {suppliers.length === 0 && (
               <div className="col-span-2 text-center py-16 text-dark-300">
                 <div className="text-5xl mb-3">🚚</div>
-                <p>Nessun fornitore. Aggiungine uno!</p>
+                <p>{en ? 'No supplier. Add one!' : 'Nessun fornitore. Aggiungine uno!'}</p>
               </div>
             )}
           </div>
@@ -89,21 +92,21 @@ export default function SuppliersPage() {
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
             <div className="bg-dark-800 border border-dark-600 rounded-2xl w-full max-w-md">
               <div className="flex items-center justify-between p-5 border-b border-dark-600">
-                <h2 className="text-lg font-semibold text-white">Nuovo Fornitore</h2>
+                <h2 className="text-lg font-semibold text-white">{en ? 'New Supplier' : 'Nuovo Fornitore'}</h2>
                 <button onClick={() => setShowForm(false)} className="text-dark-300 hover:text-white">✕</button>
               </div>
               <form onSubmit={handleSubmit} className="p-5 space-y-4">
                 <div>
-                  <label className="text-xs text-dark-200 block mb-1">Nome azienda *</label>
+                  <label className="text-xs text-dark-200 block mb-1">{en ? 'Company name *' : 'Nome azienda *'}</label>
                   <input className="input-dark" value={form.name} onChange={e => set('name', e.target.value)} required placeholder="Macelleria Rossi" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-dark-200 block mb-1">Contatto</label>
+                    <label className="text-xs text-dark-200 block mb-1">{en ? 'Contact' : 'Contatto'}</label>
                     <input className="input-dark" value={form.contactName} onChange={e => set('contactName', e.target.value)} placeholder="Mario Rossi" />
                   </div>
                   <div>
-                    <label className="text-xs text-dark-200 block mb-1">Telefono</label>
+                    <label className="text-xs text-dark-200 block mb-1">{en ? 'Phone' : 'Telefono'}</label>
                     <input className="input-dark" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+39 02..." />
                   </div>
                 </div>
@@ -112,9 +115,9 @@ export default function SuppliersPage() {
                   <input type="email" className="input-dark" value={form.email} onChange={e => set('email', e.target.value)} placeholder="info@fornitore.it" />
                 </div>
                 <div className="flex gap-3 pt-2">
-                  <button type="button" onClick={() => setShowForm(false)} className="btn-secondary flex-1">Annulla</button>
+                  <button type="button" onClick={() => setShowForm(false)} className="btn-secondary flex-1">{en ? 'Cancel' : 'Annulla'}</button>
                   <button type="submit" disabled={saving} className="btn-primary flex-1">
-                    {saving ? 'Salvataggio...' : 'Aggiungi'}
+                    {saving ? (en ? 'Saving...' : 'Salvataggio...') : (en ? 'Add' : 'Aggiungi')}
                   </button>
                 </div>
               </form>
