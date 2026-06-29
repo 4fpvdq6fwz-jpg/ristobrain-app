@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { invoicesApi } from '@/lib/api';
+import { useLang } from '@/components/LanguageProvider';
 import toast from 'react-hot-toast';
 import { Upload, FileText, Check, ArrowRight, Loader2, RotateCcw, Sparkles, FileCode } from 'lucide-react';
 
@@ -22,6 +23,8 @@ type Row = {
 };
 
 export default function FatturePage() {
+  const { lang } = useLang();
+  const en = lang === 'en';
   const [step, setStep] = useState<'upload' | 'review' | 'done'>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -34,7 +37,7 @@ export default function FatturePage() {
   const [result, setResult] = useState<{ updated: number; created: number } | null>(null);
 
   const handleAnalyze = async () => {
-    if (!file) { toast.error('Seleziona prima un file'); return; }
+    if (!file) { toast.error(en ? 'Select a file first' : 'Seleziona prima un file'); return; }
     setLoading(true);
     try {
       const res = await invoicesApi.parse(file);
@@ -58,11 +61,11 @@ export default function FatturePage() {
         purchaseUnit: l.unit || 'kg',
         price: l.unitPrice != null ? String(l.unitPrice) : '',
       }));
-      if (mapped.length === 0) { toast.error('Nessuna riga trovata nella fattura'); setLoading(false); return; }
+      if (mapped.length === 0) { toast.error(en ? 'No line found in the invoice' : 'Nessuna riga trovata nella fattura'); setLoading(false); return; }
       setRows(mapped);
       setStep('review');
     } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Errore nella lettura della fattura');
+      toast.error(err.response?.data?.error || (en ? 'Error reading the invoice' : 'Errore nella lettura della fattura'));
     } finally {
       setLoading(false);
     }
@@ -86,15 +89,15 @@ export default function FatturePage() {
           ? { ingredientId: r.ingredientId, price: Number(r.price) }
           : { name: r.name.trim(), purchaseUnit: r.purchaseUnit || 'kg', price: Number(r.price) }
       );
-    if (lines.length === 0) { toast.error('Nessuna riga valida da salvare'); return; }
+    if (lines.length === 0) { toast.error(en ? 'No valid line to save' : 'Nessuna riga valida da salvare'); return; }
     setLoading(true);
     try {
       const res = await invoicesApi.confirm({ validFrom: validFrom || undefined, lines });
       setResult({ updated: res.data.updated || 0, created: res.data.created || 0 });
       setStep('done');
-      toast.success('Prezzi aggiornati');
+      toast.success(en ? 'Prices updated' : 'Prezzi aggiornati');
     } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Errore nel salvataggio');
+      toast.error(err.response?.data?.error || (en ? 'Error saving' : 'Errore nel salvataggio'));
     } finally {
       setLoading(false);
     }
@@ -110,10 +113,10 @@ export default function FatturePage() {
       <div className="max-w-5xl mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <FileText className="text-brand-400" size={22} /> Carica fattura
+            <FileText className="text-brand-400" size={22} /> {en ? 'Upload invoice' : 'Carica fattura'}
           </h1>
           <p className="text-dark-200 text-sm mt-1">
-            Carica una fattura del fornitore: il sistema estrae ingredienti e prezzi in automatico.
+            {en ? 'Upload a supplier invoice: the system extracts ingredients and prices automatically.' : 'Carica una fattura del fornitore: il sistema estrae ingredienti e prezzi in automatico.'}
           </p>
         </div>
 
@@ -127,13 +130,13 @@ export default function FatturePage() {
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
               />
               <Upload className="mx-auto text-dark-300 mb-3" size={32} />
-              <p className="text-white font-medium">{file ? file.name : 'Scegli un file dalla fattura'}</p>
-              <p className="text-xs text-dark-300 mt-1">Fattura elettronica XML, PDF oppure foto/scansione</p>
+              <p className="text-white font-medium">{file ? file.name : (en ? 'Choose an invoice file' : 'Scegli un file dalla fattura')}</p>
+              <p className="text-xs text-dark-300 mt-1">{en ? 'XML e-invoice, PDF or photo/scan' : 'Fattura elettronica XML, PDF oppure foto/scansione'}</p>
             </label>
 
             <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-dark-300">
-              <span className="inline-flex items-center gap-1"><FileCode size={14} className="text-brand-400" /> XML FatturaPA: lettura precisa</span>
-              <span className="inline-flex items-center gap-1"><Sparkles size={14} className="text-brand-400" /> PDF/foto: estrazione con AI</span>
+              <span className="inline-flex items-center gap-1"><FileCode size={14} className="text-brand-400" /> {en ? 'XML FatturaPA: precise reading' : 'XML FatturaPA: lettura precisa'}</span>
+              <span className="inline-flex items-center gap-1"><Sparkles size={14} className="text-brand-400" /> {en ? 'PDF/photo: AI extraction' : 'PDF/foto: estrazione con AI'}</span>
             </div>
 
             <button
@@ -142,7 +145,7 @@ export default function FatturePage() {
               className="btn-primary mt-5 px-5 py-2.5 text-sm inline-flex items-center gap-2 disabled:opacity-40"
             >
               {loading ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
-              {loading ? 'Lettura in corso...' : 'Analizza fattura'}
+              {loading ? (en ? 'Reading...' : 'Lettura in corso...') : (en ? 'Analyze invoice' : 'Analizza fattura')}
             </button>
           </div>
         )}
@@ -151,36 +154,36 @@ export default function FatturePage() {
           <div className="space-y-4">
             <div className="card-dark flex flex-wrap items-center justify-between gap-4">
               <div>
-                <p className="text-xs text-dark-300">Fornitore</p>
+                <p className="text-xs text-dark-300">{en ? 'Supplier' : 'Fornitore'}</p>
                 <p className="text-white font-semibold">{supplier || '—'}</p>
               </div>
               <div>
-                <p className="text-xs text-dark-300">Data fattura</p>
+                <p className="text-xs text-dark-300">{en ? 'Invoice date' : 'Data fattura'}</p>
                 <p className="text-white">{invoiceDate || '—'}</p>
               </div>
               <div>
-                <p className="text-xs text-dark-300">Origine</p>
+                <p className="text-xs text-dark-300">{en ? 'Source' : 'Origine'}</p>
                 <span className="text-xs px-2 py-0.5 rounded-full bg-brand-500/15 text-brand-300">
                   {source === 'xml' ? 'XML FatturaPA' : 'AI'}
                 </span>
               </div>
               <div>
-                <label className="text-xs text-dark-300 block mb-1">Prezzi validi dal</label>
+                <label className="text-xs text-dark-300 block mb-1">{en ? 'Prices valid from' : 'Prezzi validi dal'}</label>
                 <input type="date" value={validFrom} onChange={(e) => setValidFrom(e.target.value)} className="input-dark text-sm py-1.5" />
               </div>
             </div>
 
             <div className="card-dark overflow-x-auto">
               <p className="text-xs text-dark-300 mb-3">
-                Controlla ogni riga: associa a un ingrediente esistente, crea un nuovo ingrediente oppure ignora la riga.
+                {en ? 'Check each line: match to an existing ingredient, create a new ingredient or skip the line.' : 'Controlla ogni riga: associa a un ingrediente esistente, crea un nuovo ingrediente oppure ignora la riga.'}
               </p>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-dark-300 border-b border-dark-600">
-                    <th className="py-2 pr-3 font-medium">Riga fattura</th>
-                    <th className="py-2 px-3 font-medium">Q.ta</th>
-                    <th className="py-2 px-3 font-medium">Ingrediente</th>
-                    <th className="py-2 px-3 font-medium">Prezzo EUR</th>
+                    <th className="py-2 pr-3 font-medium">{en ? 'Invoice line' : 'Riga fattura'}</th>
+                    <th className="py-2 px-3 font-medium">{en ? 'Qty' : 'Q.ta'}</th>
+                    <th className="py-2 px-3 font-medium">{en ? 'Ingredient' : 'Ingrediente'}</th>
+                    <th className="py-2 px-3 font-medium">{en ? 'Price EUR' : 'Prezzo EUR'}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -196,29 +199,29 @@ export default function FatturePage() {
                           onChange={(e) => handleSelect(i, e.target.value)}
                           className="input-dark text-sm py-1.5 w-full"
                         >
-                          <option value="new">+ Crea nuovo ingrediente</option>
-                          <option value="skip">Ignora riga</option>
-                          <optgroup label="Ingredienti esistenti">
+                          <option value="new">{en ? '+ Create new ingredient' : '+ Crea nuovo ingrediente'}</option>
+                          <option value="skip">{en ? 'Skip line' : 'Ignora riga'}</option>
+                          <optgroup label={en ? 'Existing ingredients' : 'Ingredienti esistenti'}>
                             {ingredients.map((ing) => (
                               <option key={ing.id} value={ing.id}>{ing.name}</option>
                             ))}
                           </optgroup>
                         </select>
                         {r.mode === 'match' && r.matchScore >= 0.5 && r.suggestedIngredientName && (
-                          <p className="text-xs text-brand-300 mt-1">Abbinato in automatico</p>
+                          <p className="text-xs text-brand-300 mt-1">{en ? 'Auto-matched' : 'Abbinato in automatico'}</p>
                         )}
                         {r.mode === 'new' && (
                           <div className="flex gap-2 mt-2">
                             <input
                               value={r.name}
                               onChange={(e) => updateRow(i, { name: e.target.value })}
-                              placeholder="Nome ingrediente"
+                              placeholder={en ? 'Ingredient name' : 'Nome ingrediente'}
                               className="input-dark text-xs py-1.5 flex-1"
                             />
                             <input
                               value={r.purchaseUnit}
                               onChange={(e) => updateRow(i, { purchaseUnit: e.target.value })}
-                              placeholder="unita"
+                              placeholder={en ? 'unit' : 'unita'}
                               className="input-dark text-xs py-1.5 w-20"
                             />
                           </div>
@@ -242,10 +245,10 @@ export default function FatturePage() {
             <div className="flex items-center gap-3">
               <button onClick={handleConfirm} disabled={loading} className="btn-primary px-5 py-2.5 text-sm inline-flex items-center gap-2 disabled:opacity-40">
                 {loading ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
-                {loading ? 'Salvataggio...' : 'Conferma e aggiorna prezzi'}
+                {loading ? (en ? 'Saving...' : 'Salvataggio...') : (en ? 'Confirm and update prices' : 'Conferma e aggiorna prezzi')}
               </button>
               <button onClick={reset} className="text-sm text-dark-200 hover:text-white inline-flex items-center gap-1.5">
-                <RotateCcw size={14} /> Annulla
+                <RotateCcw size={14} /> {en ? 'Cancel' : 'Annulla'}
               </button>
             </div>
           </div>
@@ -256,12 +259,12 @@ export default function FatturePage() {
             <div className="w-14 h-14 rounded-full bg-green-500/15 flex items-center justify-center mx-auto mb-4">
               <Check className="text-green-400" size={28} />
             </div>
-            <h2 className="text-xl font-bold text-white">Fattura importata</h2>
+            <h2 className="text-xl font-bold text-white">{en ? 'Invoice imported' : 'Fattura importata'}</h2>
             <p className="text-dark-200 text-sm mt-2">
-              {result.updated} prezzi aggiornati, {result.created} nuovi ingredienti creati.
+              {en ? `${result.updated} prices updated, ${result.created} new ingredients created.` : `${result.updated} prezzi aggiornati, ${result.created} nuovi ingredienti creati.`}
             </p>
             <button onClick={reset} className="btn-primary mt-6 px-5 py-2.5 text-sm inline-flex items-center gap-2">
-              <Upload size={16} /> Carica una nuova fattura
+              <Upload size={16} /> {en ? 'Upload a new invoice' : 'Carica una nuova fattura'}
             </button>
           </div>
         )}
