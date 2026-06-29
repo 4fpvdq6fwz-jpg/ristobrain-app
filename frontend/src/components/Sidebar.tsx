@@ -7,7 +7,8 @@ import { clearAuth, getAuth } from '@/lib/auth';
 import {
   LayoutDashboard, Package, BookOpen, UtensilsCrossed,
   TrendingUp, BarChart2, ShoppingCart, LogOut, ChevronRight,
-  MapPin, Truck, Brain, CreditCard, Settings, X, Bell, PackageX, ShieldAlert, FileText
+  MapPin, Truck, Brain, CreditCard, Settings, X, Bell, PackageX, ShieldAlert, FileText,
+  Sparkles, ScrollText
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useLang } from './LanguageProvider';
@@ -15,6 +16,8 @@ import LangSwitcher from './LangSwitcher';
 
 const navItems = [
   { href: '/dashboard', labelKey: 'nav.dashboard', icon: LayoutDashboard },
+  { href: '/creativita', labelKey: 'nav.creativity', icon: Sparkles },
+  { href: '/regole', labelKey: 'nav.rules', icon: ScrollText },
   { href: '/ingredients', labelKey: 'nav.ingredients', icon: Package },
   { href: '/fatture', labelKey: 'nav.invoices', icon: FileText },
   { href: '/recipes', labelKey: 'nav.recipes', icon: BookOpen },
