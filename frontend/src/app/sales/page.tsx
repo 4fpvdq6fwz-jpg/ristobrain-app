@@ -3,10 +3,13 @@
 import { useEffect, useState } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { salesApi } from '@/lib/api';
+import { useLang } from '@/components/LanguageProvider';
 import toast from 'react-hot-toast';
 import { Plus, Trash2, ChevronRight } from 'lucide-react';
 
 export default function SalesPage() {
+  const { lang } = useLang();
+  const en = lang === 'en';
   const [periods, setPeriods] = useState<any[]>([]);
   const [selected, setSelected] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -26,17 +29,17 @@ export default function SalesPage() {
     try {
       const res = await salesApi.get(id);
       setSelected(res.data);
-    } catch { toast.error('Errore nel caricamento'); }
+    } catch { toast.error(en ? 'Error loading' : 'Errore nel caricamento'); }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Eliminare questo periodo vendite?')) return;
+    if (!confirm(en ? 'Delete this sales period?' : 'Eliminare questo periodo vendite?')) return;
     try {
       await salesApi.delete(id);
-      toast.success('Periodo eliminato');
+      toast.success(en ? 'Period deleted' : 'Periodo eliminato');
       if (selected?.id === id) setSelected(null);
       fetchPeriods();
-    } catch { toast.error('Errore'); }
+    } catch { toast.error(en ? 'Error' : 'Errore'); }
   };
 
   return (
@@ -44,25 +47,25 @@ export default function SalesPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-white">Vendite</h1>
-            <p className="text-dark-200 text-sm mt-1">Analisi revenue e food cost per periodo</p>
+            <h1 className="text-2xl font-bold text-white">{en ? 'Sales' : 'Vendite'}</h1>
+            <p className="text-dark-200 text-sm mt-1">{en ? 'Revenue and food cost analysis per period' : 'Analisi revenue e food cost per periodo'}</p>
           </div>
           <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
-            <Plus size={16} /> Nuovo periodo
+            <Plus size={16} /> {en ? 'New period' : 'Nuovo periodo'}
           </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Periods list */}
           <div className="space-y-2">
-            <p className="text-xs text-dark-300 uppercase font-semibold tracking-wide px-1 mb-3">Periodi</p>
+            <p className="text-xs text-dark-300 uppercase font-semibold tracking-wide px-1 mb-3">{en ? 'Periods' : 'Periodi'}</p>
             {loading ? (
-              <div className="text-center text-dark-300 py-8">Caricamento...</div>
+              <div className="text-center text-dark-300 py-8">{en ? 'Loading...' : 'Caricamento...'}</div>
             ) : periods.length === 0 ? (
               <div className="text-center text-dark-300 py-12">
                 <div className="text-4xl mb-3">📅</div>
-                <p className="text-sm">Nessun periodo.</p>
-                <p className="text-xs mt-1">Crea un nuovo periodo.</p>
+                <p className="text-sm">{en ? 'No period.' : 'Nessun periodo.'}</p>
+                <p className="text-xs mt-1">{en ? 'Create a new period.' : 'Crea un nuovo periodo.'}</p>
               </div>
             ) : periods.map((p: any) => (
               <div key={p.id} onClick={() => loadPeriod(p.id)}
@@ -103,7 +106,7 @@ export default function SalesPage() {
                       <p className="text-lg font-bold text-green-400 mt-1">€{parseFloat(selected.totals?.revenue || 0).toLocaleString('it-IT')}</p>
                     </div>
                     <div className="bg-dark-700 rounded-lg p-3 text-center">
-                      <p className="text-xs text-dark-300">Costo cibo</p>
+                      <p className="text-xs text-dark-300">{en ? 'Food cost' : 'Costo cibo'}</p>
                       <p className="text-lg font-bold text-white mt-1">€{parseFloat(selected.totals?.cost || 0).toLocaleString('it-IT')}</p>
                     </div>
                     <div className="bg-dark-700 rounded-lg p-3 text-center">
@@ -116,13 +119,13 @@ export default function SalesPage() {
                 </div>
 
                 <div className="card-dark overflow-hidden">
-                  <h3 className="text-sm font-semibold text-white mb-3">Dettaglio vendite</h3>
+                  <h3 className="text-sm font-semibold text-white mb-3">{en ? 'Sales detail' : 'Dettaglio vendite'}</h3>
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-dark-600">
-                        <th className="text-left py-2 px-3 text-dark-200 font-medium text-xs">Piatto</th>
-                        <th className="text-right py-2 px-3 text-dark-200 font-medium text-xs">Qty</th>
-                        <th className="text-right py-2 px-3 text-dark-200 font-medium text-xs">Prezzo</th>
+                        <th className="text-left py-2 px-3 text-dark-200 font-medium text-xs">{en ? 'Dish' : 'Piatto'}</th>
+                        <th className="text-right py-2 px-3 text-dark-200 font-medium text-xs">{en ? 'Qty' : 'Qty'}</th>
+                        <th className="text-right py-2 px-3 text-dark-200 font-medium text-xs">{en ? 'Price' : 'Prezzo'}</th>
                         <th className="text-right py-2 px-3 text-dark-200 font-medium text-xs">Revenue</th>
                         <th className="text-right py-2 px-3 text-dark-200 font-medium text-xs">FC%</th>
                       </tr>
@@ -139,7 +142,7 @@ export default function SalesPage() {
                               <span className={parseFloat(line.fc_pct) <= 30 ? 'text-green-400' : 'text-yellow-400'}>
                                 {parseFloat(line.fc_pct).toFixed(1)}%
                               </span>
-                            ) : <span className="text-dark-400">N/D</span>}
+                            ) : <span className="text-dark-400">{en ? 'N/A' : 'N/D'}</span>}
                           </td>
                         </tr>
                       ))}
@@ -150,20 +153,20 @@ export default function SalesPage() {
             ) : (
               <div className="card-dark text-center py-24">
                 <div className="text-5xl mb-4">📊</div>
-                <p className="text-dark-200 font-medium">Seleziona un periodo</p>
-                <p className="text-dark-300 text-sm mt-1">per vedere revenue e food cost</p>
+                <p className="text-dark-200 font-medium">{en ? 'Select a period' : 'Seleziona un periodo'}</p>
+                <p className="text-dark-300 text-sm mt-1">{en ? 'to see revenue and food cost' : 'per vedere revenue e food cost'}</p>
               </div>
             )}
           </div>
         </div>
 
-        {showForm && <SalesPeriodForm onClose={() => setShowForm(false)} onSaved={fetchPeriods} />}
+        {showForm && <SalesPeriodForm en={en} onClose={() => setShowForm(false)} onSaved={fetchPeriods} />}
       </div>
     </AppLayout>
   );
 }
 
-function SalesPeriodForm({ onClose, onSaved }: any) {
+function SalesPeriodForm({ onClose, onSaved, en }: any) {
   const [form, setForm] = useState({ name: '', periodFrom: '', periodTo: '', totalCovers: '', locationId: '' });
   const [loading, setLoading] = useState(false);
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
@@ -173,10 +176,10 @@ function SalesPeriodForm({ onClose, onSaved }: any) {
     setLoading(true);
     try {
       await salesApi.create({ ...form, locationId: form.locationId || undefined });
-      toast.success('Periodo creato!');
+      toast.success(en ? 'Period created!' : 'Periodo creato!');
       onSaved(); onClose();
     } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Errore');
+      toast.error(err.response?.data?.error || (en ? 'Error' : 'Errore'));
     } finally { setLoading(false); }
   };
 
@@ -184,32 +187,32 @@ function SalesPeriodForm({ onClose, onSaved }: any) {
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
       <div className="bg-dark-800 border border-dark-600 rounded-2xl w-full max-w-md">
         <div className="flex items-center justify-between p-5 border-b border-dark-600">
-          <h2 className="text-lg font-semibold text-white">Nuovo Periodo Vendite</h2>
+          <h2 className="text-lg font-semibold text-white">{en ? 'New Sales Period' : 'Nuovo Periodo Vendite'}</h2>
           <button onClick={onClose} className="text-dark-300 hover:text-white">✕</button>
         </div>
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
-            <label className="text-xs text-dark-200 block mb-1">Nome periodo *</label>
-            <input className="input-dark" value={form.name} onChange={e => set('name', e.target.value)} required placeholder="es. Novembre 2024" />
+            <label className="text-xs text-dark-200 block mb-1">{en ? 'Period name *' : 'Nome periodo *'}</label>
+            <input className="input-dark" value={form.name} onChange={e => set('name', e.target.value)} required placeholder={en ? 'e.g. November 2024' : 'es. Novembre 2024'} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs text-dark-200 block mb-1">Data inizio *</label>
+              <label className="text-xs text-dark-200 block mb-1">{en ? 'Start date *' : 'Data inizio *'}</label>
               <input type="date" className="input-dark" value={form.periodFrom} onChange={e => set('periodFrom', e.target.value)} required />
             </div>
             <div>
-              <label className="text-xs text-dark-200 block mb-1">Data fine *</label>
+              <label className="text-xs text-dark-200 block mb-1">{en ? 'End date *' : 'Data fine *'}</label>
               <input type="date" className="input-dark" value={form.periodTo} onChange={e => set('periodTo', e.target.value)} required />
             </div>
           </div>
           <div>
-            <label className="text-xs text-dark-200 block mb-1">Numero coperti</label>
+            <label className="text-xs text-dark-200 block mb-1">{en ? 'Number of covers' : 'Numero coperti'}</label>
             <input type="number" min="0" className="input-dark" value={form.totalCovers} onChange={e => set('totalCovers', e.target.value)} placeholder="847" />
           </div>
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="btn-secondary flex-1">Annulla</button>
+            <button type="button" onClick={onClose} className="btn-secondary flex-1">{en ? 'Cancel' : 'Annulla'}</button>
             <button type="submit" disabled={loading} className="btn-primary flex-1">
-              {loading ? 'Salvataggio...' : 'Crea periodo'}
+              {loading ? (en ? 'Saving...' : 'Salvataggio...') : (en ? 'Create period' : 'Crea periodo')}
             </button>
           </div>
         </form>
