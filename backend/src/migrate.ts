@@ -67,6 +67,53 @@ export async function runMigrations(): Promise<void> {
     await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMPTZ`);
     console.log('✅ Email verification & password reset columns ready');
 
+    // Motore Creatività Menu — campi ristorante per la generazione (additivi, non disruptivi)
+    await client.query(`ALTER TABLE locations ADD COLUMN IF NOT EXISTS formato TEXT`);
+    await client.query(`ALTER TABLE locations ADD COLUMN IF NOT EXISTS regione TEXT`);
+    await client.query(`ALTER TABLE locations ADD COLUMN IF NOT EXISTS ticket_target NUMERIC`);
+    await client.query(`ALTER TABLE locations ADD COLUMN IF NOT EXISTS vincoli TEXT`);
+
+    // Regole della casa (logica proprietaria del Chef)
+    await client.query(`CREATE TABLE IF NOT EXISTS house_rules (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+      tipo TEXT NOT NULL,
+      contenuto TEXT NOT NULL,
+      priorita INTEGER NOT NULL DEFAULT 1,
+      attiva BOOLEAN NOT NULL DEFAULT TRUE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      created_by UUID REFERENCES users(id)
+    )`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_house_rules_ws ON house_rules (workspace_id)`);
+
+    // Menu di riferimento (esempi reali per few-shot)
+    await client.query(`CREATE TABLE IF NOT EXISTS reference_menus (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+      cliente TEXT,
+      formato TEXT,
+      contenuto TEXT NOT NULL,
+      attiva BOOLEAN NOT NULL DEFAULT TRUE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      created_by UUID REFERENCES users(id)
+    )`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_reference_menus_ws ON reference_menus (workspace_id)`);
+
+    // Log generazioni menu
+    await client.query(`CREATE TABLE IF NOT EXISTS menu_generations (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+      restaurant_id UUID REFERENCES locations(id) ON DELETE SET NULL,
+      brief_input JSONB,
+      output JSONB,
+      usato_web BOOLEAN NOT NULL DEFAULT FALSE,
+      model TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      created_by UUID REFERENCES users(id)
+    )`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_menu_generations_ws ON menu_generations (workspace_id)`);
+    console.log('✅ Creative menu engine tables ready');
+
     // Always ensure demo account exists (ON CONFLICT DO NOTHING = safe to re-run)
     const seedPath = path.join(__dirname, 'db', 'seed.sql');
     if (fs.existsSync(seedPath)) {
