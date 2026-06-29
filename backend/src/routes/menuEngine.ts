@@ -29,7 +29,7 @@ router.post('/rules', authenticate, requireRoles('owner', 'admin'), async (req: 
     await query(
       `INSERT INTO house_rules (id, workspace_id, tipo, contenuto, priorita, attiva, created_by)
        VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-      [id, req.user!.workspaceId, tipo, contenuto, parseInt(priorita) || 1, attiva !== false, req.user!.userId]
+      [id, req.user!.workspaceId, tipo, contenuto, parseInt(String(priorita)) || 1, attiva !== false, req.user!.userId]
     );
     const created = await queryOne(`SELECT * FROM house_rules WHERE id=$1`, [id]);
     return res.status(201).json(created);
@@ -44,7 +44,7 @@ router.put('/rules/:id', authenticate, requireRoles('owner', 'admin'), async (re
     await query(
       `UPDATE house_rules SET tipo=$1, contenuto=$2, priorita=$3, attiva=$4
        WHERE id=$5 AND workspace_id=$6`,
-      [tipo, contenuto, parseInt(priorita) || 1, attiva !== false, req.params.id, req.user!.workspaceId]
+      [tipo, contenuto, parseInt(String(priorita)) || 1, attiva !== false, req.params.id, req.user!.workspaceId]
     );
     const updated = await queryOne(`SELECT * FROM house_rules WHERE id=$1 AND workspace_id=$2`, [req.params.id, req.user!.workspaceId]);
     return res.json(updated);
@@ -251,9 +251,9 @@ FORMATO OUTPUT (JSON esatto):
       body.tools = [{ type: 'web_search_20250305', name: 'web_search', max_uses: 3 }];
     }
 
-    let response: globalThis.Response;
+    let data: any;
     try {
-      response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -262,17 +262,17 @@ FORMATO OUTPUT (JSON esatto):
         },
         body: JSON.stringify(body),
       });
+      if (!response.ok) {
+        const t = await response.text().catch(() => '');
+        console.error('Anthropic error', response.status, t);
+        return res.status(502).json({ error: `Servizio AI non disponibile (${response.status}). Riprova tra poco.` });
+      }
+      data = await response.json();
     } catch (netErr: any) {
+      console.error('Anthropic fetch error', netErr);
       return res.status(502).json({ error: 'Chiamata AI fallita (rete). Riprova tra poco.' });
     }
 
-    if (!response.ok) {
-      const t = await response.text().catch(() => '');
-      console.error('Anthropic error', response.status, t);
-      return res.status(502).json({ error: `Servizio AI non disponibile (${response.status}). Riprova tra poco.` });
-    }
-
-    const data: any = await response.json();
     const rawText = (data.content || [])
       .filter((b: any) => b.type === 'text')
       .map((b: any) => b.text)
