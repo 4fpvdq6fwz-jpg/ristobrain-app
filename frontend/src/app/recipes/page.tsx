@@ -4,10 +4,13 @@ import { useEffect, useState } from 'react';
 import AppLayout from '@/components/AppLayout';
 import FcBadge from '@/components/FcBadge';
 import { recipesApi, calcApi } from '@/lib/api';
+import { useLang } from '@/components/LanguageProvider';
 import toast from 'react-hot-toast';
 import { Plus, Search, Copy, Trash2, ChevronDown, ChevronRight, Clock } from 'lucide-react';
 
 export default function RecipesPage() {
+  const { lang } = useLang();
+  const en = lang === 'en';
   const [items, setItems] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [search, setSearch] = useState('');
@@ -44,19 +47,19 @@ export default function RecipesPage() {
   const handleClone = async (id: string, name: string) => {
     try {
       await recipesApi.clone(id);
-      toast.success(`"${name}" duplicata!`);
+      toast.success(en ? `"${name}" duplicated!` : `"${name}" duplicata!`);
       fetchData();
-    } catch { toast.error('Errore'); }
+    } catch { toast.error(en ? 'Error' : 'Errore'); }
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Eliminare "${name}"?`)) return;
+    if (!confirm(en ? `Delete "${name}"?` : `Eliminare "${name}"?`)) return;
     try {
       await recipesApi.delete(id);
-      toast.success('Ricetta eliminata');
+      toast.success(en ? 'Recipe deleted' : 'Ricetta eliminata');
       if (selected?.id === id) { setSelected(null); setCalcData(null); }
       fetchData();
-    } catch { toast.error('Errore'); }
+    } catch { toast.error(en ? 'Error' : 'Errore'); }
   };
 
   const grouped = categories.reduce((acc: any, cat: any) => {
@@ -70,25 +73,25 @@ export default function RecipesPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-white">Ricette</h1>
-            <p className="text-dark-200 text-sm mt-1">{items.length} ricette con food cost live</p>
+            <h1 className="text-2xl font-bold text-white">{en ? 'Recipes' : 'Ricette'}</h1>
+            <p className="text-dark-200 text-sm mt-1">{items.length} {en ? 'recipes with live food cost' : 'ricette con food cost live'}</p>
           </div>
           <button onClick={() => setShowForm(true)} className="btn-primary flex items-center gap-2">
-            <Plus size={16} /> Nuova ricetta
+            <Plus size={16} /> {en ? 'New recipe' : 'Nuova ricetta'}
           </button>
         </div>
 
         <div className="relative max-w-xs mb-5">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-300" />
           <input value={search} onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cerca ricetta..." className="input-dark pl-9" />
+            placeholder={en ? 'Search recipe...' : 'Cerca ricetta...'} className="input-dark pl-9" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
           {/* List */}
           <div className="lg:col-span-3 space-y-4">
             {loading ? (
-              <div className="text-center py-16 text-dark-300">Caricamento...</div>
+              <div className="text-center py-16 text-dark-300">{en ? 'Loading...' : 'Caricamento...'}</div>
             ) : (
               <>
                 {Object.values(grouped).map((cat: any) => cat.recipes.length > 0 && (
@@ -96,7 +99,7 @@ export default function RecipesPage() {
                     <h3 className="text-sm font-semibold text-brand-400 mb-3 uppercase tracking-wide">{cat.name}</h3>
                     <div className="space-y-2">
                       {cat.recipes.map((recipe: any) => (
-                        <RecipeRow key={recipe.id} recipe={recipe}
+                        <RecipeRow key={recipe.id} recipe={recipe} en={en}
                           selected={selected?.id === recipe.id}
                           onSelect={() => handleSelect(recipe)}
                           onClone={() => handleClone(recipe.id, recipe.name)}
@@ -108,9 +111,9 @@ export default function RecipesPage() {
                 ))}
                 {uncategorized.length > 0 && (
                   <div className="card-dark">
-                    <h3 className="text-sm font-semibold text-dark-300 mb-3 uppercase tracking-wide">Senza categoria</h3>
+                    <h3 className="text-sm font-semibold text-dark-300 mb-3 uppercase tracking-wide">{en ? 'Uncategorized' : 'Senza categoria'}</h3>
                     {uncategorized.map((recipe: any) => (
-                      <RecipeRow key={recipe.id} recipe={recipe}
+                      <RecipeRow key={recipe.id} recipe={recipe} en={en}
                         selected={selected?.id === recipe.id}
                         onSelect={() => handleSelect(recipe)}
                         onClone={() => handleClone(recipe.id, recipe.name)}
@@ -122,7 +125,7 @@ export default function RecipesPage() {
                 {items.length === 0 && (
                   <div className="text-center py-20 text-dark-300">
                     <div className="text-5xl mb-3">📋</div>
-                    <p>Nessuna ricetta trovata.</p>
+                    <p>{en ? 'No recipe found.' : 'Nessuna ricetta trovata.'}</p>
                   </div>
                 )}
               </>
@@ -138,8 +141,8 @@ export default function RecipesPage() {
                     <h2 className="text-base font-bold text-white">{calcData.recipe.name}</h2>
                     <p className="text-xs text-dark-300 mt-1 flex items-center gap-1">
                       <Clock size={11} />
-                      {(calcData.recipe.prep_time_min || 0) + (calcData.recipe.cook_time_min || 0)} min totali
-                      · {calcData.recipe.yield_portions} porz.
+                      {(calcData.recipe.prep_time_min || 0) + (calcData.recipe.cook_time_min || 0)} {en ? 'min total' : 'min totali'}
+                      · {calcData.recipe.yield_portions} {en ? 'serv.' : 'porz.'}
                     </p>
                   </div>
                   <button onClick={() => { setSelected(null); setCalcData(null); }} className="text-dark-400 hover:text-white">✕</button>
@@ -147,13 +150,13 @@ export default function RecipesPage() {
 
                 <div className="grid grid-cols-2 gap-3 mb-4">
                   <div className="bg-dark-700 rounded-lg p-3 text-center">
-                    <p className="text-xs text-dark-300">Costo/porzione</p>
+                    <p className="text-xs text-dark-300">{en ? 'Cost/serving' : 'Costo/porzione'}</p>
                     <p className="text-lg font-bold text-white mt-1">
                       €{parseFloat(calcData.summary.costPerPortion).toFixed(3)}
                     </p>
                   </div>
                   <div className="bg-dark-700 rounded-lg p-3 text-center">
-                    <p className="text-xs text-dark-300">Costo totale</p>
+                    <p className="text-xs text-dark-300">{en ? 'Total cost' : 'Costo totale'}</p>
                     <p className="text-lg font-bold text-white mt-1">
                       €{parseFloat(calcData.summary.totalCost).toFixed(2)}
                     </p>
@@ -161,7 +164,7 @@ export default function RecipesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold text-dark-300 uppercase tracking-wide mb-2">Distinta base</p>
+                  <p className="text-xs font-semibold text-dark-300 uppercase tracking-wide mb-2">{en ? 'Recipe items' : 'Distinta base'}</p>
                   {calcData.items.map((item: any, i: number) => (
                     <div key={i} className="flex items-center justify-between py-2 border-b border-dark-700 last:border-0 text-sm">
                       <div>
@@ -176,21 +179,21 @@ export default function RecipesPage() {
             ) : (
               <div className="card-dark text-center py-16 text-dark-300">
                 <div className="text-4xl mb-3">👆</div>
-                <p className="text-sm">Seleziona una ricetta<br />per vedere il food cost</p>
+                <p className="text-sm">{en ? <>Select a recipe<br />to see the food cost</> : <>Seleziona una ricetta<br />per vedere il food cost</>}</p>
               </div>
             )}
           </div>
         </div>
 
         {showForm && (
-          <RecipeFormModal categories={categories} onClose={() => setShowForm(false)} onSaved={fetchData} />
+          <RecipeFormModal categories={categories} en={en} onClose={() => setShowForm(false)} onSaved={fetchData} />
         )}
       </div>
     </AppLayout>
   );
 }
 
-function RecipeRow({ recipe, selected, onSelect, onClone, onDelete }: any) {
+function RecipeRow({ recipe, selected, onSelect, onClone, onDelete, en }: any) {
   return (
     <div
       onClick={onSelect}
@@ -206,8 +209,8 @@ function RecipeRow({ recipe, selected, onSelect, onClone, onDelete }: any) {
           )}
         </div>
         <div className="flex items-center gap-3 mt-1 text-xs text-dark-300">
-          <span>{recipe.ingredient_count || 0} ingredienti</span>
-          <span>{recipe.yield_portions} porz.</span>
+          <span>{recipe.ingredient_count || 0} {en ? 'ingredients' : 'ingredienti'}</span>
+          <span>{recipe.yield_portions} {en ? 'serv.' : 'porz.'}</span>
         </div>
       </div>
       <div className="flex items-center gap-1 ml-2">
@@ -225,7 +228,7 @@ function RecipeRow({ recipe, selected, onSelect, onClone, onDelete }: any) {
   );
 }
 
-function RecipeFormModal({ categories, onClose, onSaved }: any) {
+function RecipeFormModal({ categories, onClose, onSaved, en }: any) {
   const [form, setForm] = useState({ name: '', categoryId: '', yieldPortions: 1, prepTimeMin: 0, cookTimeMin: 0, description: '' });
   const [loading, setLoading] = useState(false);
   const set = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
@@ -235,10 +238,10 @@ function RecipeFormModal({ categories, onClose, onSaved }: any) {
     setLoading(true);
     try {
       await recipesApi.create(form);
-      toast.success('Ricetta creata!');
+      toast.success(en ? 'Recipe created!' : 'Ricetta creata!');
       onSaved(); onClose();
     } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Errore');
+      toast.error(err.response?.data?.error || (en ? 'Error' : 'Errore'));
     } finally { setLoading(false); }
   };
 
@@ -246,43 +249,43 @@ function RecipeFormModal({ categories, onClose, onSaved }: any) {
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
       <div className="bg-dark-800 border border-dark-600 rounded-2xl w-full max-w-md">
         <div className="flex items-center justify-between p-5 border-b border-dark-600">
-          <h2 className="text-lg font-semibold text-white">Nuova Ricetta</h2>
+          <h2 className="text-lg font-semibold text-white">{en ? 'New Recipe' : 'Nuova Ricetta'}</h2>
           <button onClick={onClose} className="text-dark-300 hover:text-white">✕</button>
         </div>
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           <div>
-            <label className="text-xs text-dark-200 block mb-1">Nome ricetta *</label>
-            <input className="input-dark" value={form.name} onChange={e => set('name', e.target.value)} required placeholder="es. Risotto al Tartufo" />
+            <label className="text-xs text-dark-200 block mb-1">{en ? 'Recipe name *' : 'Nome ricetta *'}</label>
+            <input className="input-dark" value={form.name} onChange={e => set('name', e.target.value)} required placeholder={en ? 'e.g. Truffle Risotto' : 'es. Risotto al Tartufo'} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs text-dark-200 block mb-1">Categoria</label>
+              <label className="text-xs text-dark-200 block mb-1">{en ? 'Category' : 'Categoria'}</label>
               <select className="input-dark" value={form.categoryId} onChange={e => set('categoryId', e.target.value)}>
-                <option value="">Nessuna</option>
+                <option value="">{en ? 'None' : 'Nessuna'}</option>
                 {categories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs text-dark-200 block mb-1">Porzioni resa</label>
+              <label className="text-xs text-dark-200 block mb-1">{en ? 'Yield servings' : 'Porzioni resa'}</label>
               <input type="number" min="1" className="input-dark" value={form.yieldPortions} onChange={e => set('yieldPortions', parseInt(e.target.value))} />
             </div>
             <div>
-              <label className="text-xs text-dark-200 block mb-1">Prep (min)</label>
+              <label className="text-xs text-dark-200 block mb-1">{en ? 'Prep (min)' : 'Prep (min)'}</label>
               <input type="number" min="0" className="input-dark" value={form.prepTimeMin} onChange={e => set('prepTimeMin', parseInt(e.target.value))} />
             </div>
             <div>
-              <label className="text-xs text-dark-200 block mb-1">Cottura (min)</label>
+              <label className="text-xs text-dark-200 block mb-1">{en ? 'Cooking (min)' : 'Cottura (min)'}</label>
               <input type="number" min="0" className="input-dark" value={form.cookTimeMin} onChange={e => set('cookTimeMin', parseInt(e.target.value))} />
             </div>
           </div>
           <div>
-            <label className="text-xs text-dark-200 block mb-1">Descrizione</label>
-            <textarea className="input-dark h-20 resize-none" value={form.description} onChange={e => set('description', e.target.value)} placeholder="Descrizione del piatto..." />
+            <label className="text-xs text-dark-200 block mb-1">{en ? 'Description' : 'Descrizione'}</label>
+            <textarea className="input-dark h-20 resize-none" value={form.description} onChange={e => set('description', e.target.value)} placeholder={en ? 'Dish description...' : 'Descrizione del piatto...'} />
           </div>
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="btn-secondary flex-1">Annulla</button>
+            <button type="button" onClick={onClose} className="btn-secondary flex-1">{en ? 'Cancel' : 'Annulla'}</button>
             <button type="submit" disabled={loading} className="btn-primary flex-1">
-              {loading ? 'Salvataggio...' : 'Crea ricetta'}
+              {loading ? (en ? 'Saving...' : 'Salvataggio...') : (en ? 'Create recipe' : 'Crea ricetta')}
             </button>
           </div>
         </form>
