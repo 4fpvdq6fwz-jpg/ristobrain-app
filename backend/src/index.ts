@@ -16,6 +16,7 @@ import suppliersRouter from './routes/suppliers';
 import aiRouter from './routes/ai';
 import invoicesRouter from './routes/invoices';
 import billingRouter, { stripeWebhookHandler } from './routes/billing';
+import menuEngineRouter from './routes/menuEngine';
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use('/api/suppliers', suppliersRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/invoices', invoicesRouter);
 app.use('/api/billing', billingRouter);
+app.use('/api/creativita', menuEngineRouter);
 
 // 404 and error handlers
 app.use(notFound);
