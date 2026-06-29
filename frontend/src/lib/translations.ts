@@ -5,6 +5,8 @@ type Dict = Record<string, string>;
 const it: Dict = {
   // Navigazione
   'nav.dashboard': 'Dashboard',
+  'nav.creativity': 'Creatività',
+  'nav.rules': 'Regole',
   'nav.ingredients': 'Ingredienti',
   'nav.invoices': 'Fatture',
   'nav.recipes': 'Ricette',
@@ -60,6 +62,8 @@ const it: Dict = {
 const en: Dict = {
   // Navigation
   'nav.dashboard': 'Dashboard',
+  'nav.creativity': 'Creativity',
+  'nav.rules': 'Rules',
   'nav.ingredients': 'Ingredients',
   'nav.invoices': 'Invoices',
   'nav.recipes': 'Recipes',
