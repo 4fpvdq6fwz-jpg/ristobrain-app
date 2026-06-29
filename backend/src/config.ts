@@ -13,6 +13,7 @@ export const config = {
   stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
   stripeProPriceId: process.env.STRIPE_PRO_PRICE_ID || '',
+  stripeBusinessPriceId: process.env.STRIPE_BUSINESS_PRICE_ID || '',
   resendApiKey: process.env.RESEND_API_KEY || '',
   mailFrom: process.env.MAIL_FROM || 'RistoBrain <noreply@ristobrain.com>',
   appUrl: process.env.APP_URL || 'https://app.ristobrain.com',
