@@ -20,6 +20,7 @@ export default function AiPage() {
   const [risposta, setRisposta] = useState('');
   const [loadingChat, setLoadingChat] = useState(false);
   const [source, setSource] = useState('');
+  const [provider, setProvider] = useState('claude');
   const [isAdmin, setIsAdmin] = useState(false);
 
   const [knowledge, setKnowledge] = useState<any[]>([]);
@@ -53,11 +54,11 @@ export default function AiPage() {
     setRisposta('');
     setSource('');
     try {
-      const res = await aiApi.suggest(question);
+      const res = await aiApi.suggest(question, provider);
       setRisposta(res.data.answer);
       setSource(res.data.source);
-    } catch {
-      setRisposta('Errore nel servizio AI. Riprova tra un momento.');
+    } catch (err: any) {
+      setRisposta(err?.response?.data?.error || 'Errore nel servizio AI. Riprova tra un momento.');
     } finally {
       setLoadingChat(false);
     }
@@ -107,30 +108,45 @@ export default function AiPage() {
         <div className={`grid grid-cols-1 ${isAdmin ? 'lg:grid-cols-3' : ''} gap-4`}>
           {/* Chat AI — 2 colonne */}
           <div className={`${isAdmin ? 'lg:col-span-2' : ''} card-dark`}>
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
               <span className="text-xl">💬</span>
               <div>
                 <h2 className="text-base font-semibold text-white">Chiedi al Consulente</h2>
                 <p className="text-xs text-dark-400">Analisi basata sui tuoi dati reali</p>
               </div>
-              {source === 'claude' && (
-                <span className="ml-auto text-xs bg-brand-500/20 text-brand-400 px-2 py-0.5 rounded-full">
-                  ✨ Powered by Claude
-                </span>
-              )}
-              {source === 'local' && (
-                <span className="ml-auto text-xs bg-dark-600 text-dark-300 px-2 py-0.5 rounded-full">
-                  Analisi locale
-                </span>
-              )}
+              <div className="ml-auto flex items-center gap-2">
+                <span className="text-xs text-dark-400">Motore:</span>
+                <div className="flex bg-dark-700 rounded-lg p-1 gap-1">
+                  {(['claude', 'openai'] as const).map((pv) => (
+                    <button key={pv} type="button" onClick={() => setProvider(pv)}
+                      className={`px-3 py-1 rounded text-xs font-medium transition-colors ${provider === pv ? 'bg-dark-500 text-white' : 'text-dark-300 hover:text-white'}`}>
+                      {pv === 'claude' ? 'Claude' : 'ChatGPT'}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
+
+            {(source === 'claude' || source === 'chatgpt' || source === 'local') && (
+              <div className="mb-3">
+                {source === 'claude' && (
+                  <span className="text-xs bg-brand-500/20 text-brand-400 px-2 py-0.5 rounded-full">✨ Powered by Claude</span>
+                )}
+                {source === 'chatgpt' && (
+                  <span className="text-xs bg-brand-500/20 text-brand-400 px-2 py-0.5 rounded-full">✨ Powered by ChatGPT</span>
+                )}
+                {source === 'local' && (
+                  <span className="text-xs bg-dark-600 text-dark-300 px-2 py-0.5 rounded-full">Analisi locale</span>
+                )}
+              </div>
+            )}
 
             <div className="flex flex-wrap gap-2 mb-4">
               {SUGGERIMENTI.map((s) => (
                 <button
                   key={s}
                   onClick={() => { setDomanda(s); chiedi(s); }}
-                  className="text-xs px-3 py-1.5 rounded-ful border border-dark-500 text-dark-200 hover:border-brand-500 hover:text-brand-400 transition-colors"
+                  className="text-xs px-3 py-1.5 rounded-full border border-dark-500 text-dark-200 hover:border-brand-500 hover:text-brand-400 transition-colors"
                 >
                   {s}
                 </button>
