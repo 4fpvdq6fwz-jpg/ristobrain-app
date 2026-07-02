@@ -5,6 +5,7 @@ import { authenticate, requireRoles } from '../middleware/auth';
 
 const router = Router();
 const MODEL = 'claude-sonnet-4-6';
+const OPENAI_MODEL = 'gpt-4o';
 
 // ===================== HOUSE RULES (regole della casa) =====================
 
@@ -144,7 +145,6 @@ function roundToSeven(p: number): number {
 
 function extractJson(raw: string): any {
   let txt = (raw || '').trim();
-  // rimuove eventuali fence ```json ... ```
   txt = txt.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
   const start = txt.indexOf('{');
   const end = txt.lastIndexOf('}');
@@ -163,7 +163,11 @@ router.post('/generate', authenticate, async (req: Request, res: Response) => {
       ticket_target,
       ingredienti,
       usa_web = false,
+      provider: providerRaw,
     } = req.body || {};
+
+    const provider = providerRaw === 'openai' ? 'openai' : 'claude';
+    const usedModel = provider === 'openai' ? OPENAI_MODEL : MODEL;
 
     // 1. Contesto ristorante (opzionale)
     let restaurant: any = null;
@@ -235,49 +239,80 @@ VINCOLI DURI:
 FORMATO OUTPUT (JSON esatto):
 {"menu":[{"categoria":"","nome":"","descrizione":"","ingredienti_chiave":[],"food_cost_stimato_pct":0,"prezzo_suggerito":0,"classificazione_abc_attesa":"","razionale_margine":"","fonte":""}],"note_food_cost":"","fonti_usate":[]}`;
 
-    // 4. Chiamata Anthropic
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
-      return res.status(503).json({ error: 'Servizio AI non configurato: aggiungi ANTHROPIC_API_KEY nel backend (Railway → Variables).' });
-    }
+    const userMsg = 'Genera il menu richiesto, rispettando le regole della casa. Rispondi SOLO con il JSON.';
 
-    const body: any = {
-      model: MODEL,
-      max_tokens: 3500,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: 'Genera il menu richiesto, rispettando le regole della casa. Rispondi SOLO con il JSON.' }],
-    };
-    if (usa_web) {
-      body.tools = [{ type: 'web_search_20250305', name: 'web_search', max_uses: 3 }];
-    }
+    // 4. Chiamata al modello (provider selezionabile: Claude oppure ChatGPT/OpenAI)
+    let rawText = '';
 
-    let data: any;
-    try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-        },
-        body: JSON.stringify(body),
-      });
+    if (provider === 'openai') {
+      const apiKey = process.env.OPENAI_API_KEY;
+      if (!apiKey) {
+        return res.status(503).json({ error: 'ChatGPT non configurato: aggiungi OPENAI_API_KEY nel backend (Railway → Variables).' });
+      }
+      let r: any;
+      try {
+        r = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+          body: JSON.stringify({
+            model: OPENAI_MODEL,
+            max_tokens: 3500,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userMsg },
+            ],
+          }),
+        });
+      } catch (netErr: any) {
+        return res.status(502).json({ error: 'Chiamata ChatGPT fallita (rete). Riprova tra poco.' });
+      }
+      if (!r.ok) {
+        const t = await r.text().catch(() => '');
+        console.error('OpenAI error', r.status, t);
+        return res.status(502).json({ error: `ChatGPT non disponibile (${r.status}). Riprova tra poco.` });
+      }
+      const data: any = await r.json();
+      rawText = ((data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '').trim();
+    } else {
+      const apiKey = process.env.ANTHROPIC_API_KEY;
+      if (!apiKey) {
+        return res.status(503).json({ error: 'Claude non configurato: aggiungi ANTHROPIC_API_KEY nel backend (Railway → Variables).' });
+      }
+      const body: any = {
+        model: MODEL,
+        max_tokens: 3500,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userMsg }],
+      };
+      if (usa_web) {
+        body.tools = [{ type: 'web_search_20250305', name: 'web_search', max_uses: 3 }];
+      }
+      let response: any;
+      try {
+        response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+          },
+          body: JSON.stringify(body),
+        });
+      } catch (netErr: any) {
+        return res.status(502).json({ error: 'Chiamata AI fallita (rete). Riprova tra poco.' });
+      }
       if (!response.ok) {
         const t = await response.text().catch(() => '');
         console.error('Anthropic error', response.status, t);
         return res.status(502).json({ error: `Servizio AI non disponibile (${response.status}). Riprova tra poco.` });
       }
-      data = await response.json();
-    } catch (netErr: any) {
-      console.error('Anthropic fetch error', netErr);
-      return res.status(502).json({ error: 'Chiamata AI fallita (rete). Riprova tra poco.' });
+      const data: any = await response.json();
+      rawText = (data.content || [])
+        .filter((b: any) => b.type === 'text')
+        .map((b: any) => b.text)
+        .join('')
+        .trim();
     }
-
-    const rawText = (data.content || [])
-      .filter((b: any) => b.type === 'text')
-      .map((b: any) => b.text)
-      .join('')
-      .trim();
 
     // 5. Parse JSON robusto
     let parsed: any;
@@ -306,6 +341,7 @@ FORMATO OUTPUT (JSON esatto):
       note_food_cost: parsed.note_food_cost || '',
       fonti_usate: Array.isArray(parsed.fonti_usate) ? parsed.fonti_usate : ['logica_casa'],
       usando_default: usandoDefault,
+      provider,
     };
 
     // 7. Log su menu_generations
@@ -313,7 +349,7 @@ FORMATO OUTPUT (JSON esatto):
       await query(
         `INSERT INTO menu_generations (id, workspace_id, restaurant_id, brief_input, output, usato_web, model, created_by)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-        [uuidv4(), wsId, restaurant_id || null, JSON.stringify(req.body || {}), JSON.stringify(result), !!usa_web, MODEL, req.user!.userId]
+        [uuidv4(), wsId, restaurant_id || null, JSON.stringify(req.body || {}), JSON.stringify(result), !!usa_web, usedModel, req.user!.userId]
       );
     } catch (logErr) {
       console.error('menu_generations log fail (non bloccante):', logErr);
