@@ -43,6 +43,7 @@ export default function CreativitaPage() {
     ticket: '',
     ingredienti: '',
     usaWeb: false,
+    provider: 'claude',
   });
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -72,6 +73,7 @@ export default function CreativitaPage() {
         ticket_target: form.ticket ? Number(form.ticket) : undefined,
         ingredienti: form.ingredienti.split(',').map((s: string) => s.trim()).filter(Boolean),
         usa_web: form.usaWeb,
+        provider: form.provider,
       };
       const res = await creativaApi.generate(payload);
       setResult(res.data);
@@ -169,10 +171,23 @@ export default function CreativitaPage() {
           </div>
 
           <div className="flex items-center justify-between mt-5 flex-wrap gap-3">
-            <label className="flex items-center gap-2 text-sm text-dark-200">
-              <input type="checkbox" checked={form.usaWeb} onChange={e => setF('usaWeb', e.target.checked)} />
-              <Globe size={14} className="text-dark-400" /> {en ? 'Also use web inspiration' : 'Usa anche ispirazione web'}
-            </label>
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-dark-400">{en ? 'Engine' : 'Motore'}:</span>
+                <div className="flex bg-dark-700 rounded-lg p-1 gap-1">
+                  {(['claude', 'openai'] as const).map((pv) => (
+                    <button key={pv} type="button" onClick={() => setF('provider', pv)}
+                      className={`px-3 py-1 rounded text-xs font-medium transition-colors ${form.provider === pv ? 'bg-dark-500 text-white' : 'text-dark-300 hover:text-white'}`}>
+                      {pv === 'claude' ? 'Claude' : 'ChatGPT'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <label className="flex items-center gap-2 text-sm text-dark-200">
+                <input type="checkbox" checked={form.usaWeb} onChange={e => setF('usaWeb', e.target.checked)} />
+                <Globe size={14} className="text-dark-400" /> {en ? 'Also use web inspiration' : 'Usa anche ispirazione web'}
+              </label>
+            </div>
             <button onClick={generate} disabled={loading} className="btn-primary px-6 py-2.5 inline-flex items-center gap-2 disabled:opacity-40">
               {loading ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
               {loading ? (en ? 'Generating...' : 'Generazione...') : (en ? 'Generate menu' : 'Genera menu')}
@@ -193,6 +208,7 @@ export default function CreativitaPage() {
               <div className="flex items-center gap-2 text-xs text-dark-300">
                 <ChefHat size={14} className="text-brand-400" />
                 {en ? 'Sources' : 'Fonti'}: {(result.fonti_usate || []).join(', ') || 'logica_casa'}
+                {result.provider && <span className="text-dark-500">· {result.provider === 'openai' ? 'ChatGPT' : 'Claude'}</span>}
               </div>
               <button onClick={exportTxt} className="text-sm text-dark-200 hover:text-white inline-flex items-center gap-1.5 border border-dark-500 rounded-lg px-3 py-1.5">
                 <Download size={14} /> {en ? 'Export' : 'Esporta'}
