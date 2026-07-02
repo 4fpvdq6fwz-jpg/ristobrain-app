@@ -55,10 +55,11 @@ router.delete('/knowledge/:id', authenticate, requireAdmin, async (req: Request,
   }
 });
 
-// POST /ai/suggest — Chiede a Claude consigli personalizzati sul ristorante
+// POST /ai/suggest — Chiede all'AI (Claude o ChatGPT) consigli personalizzati sul ristorante
 router.post('/suggest', authenticate, async (req: Request, res: Response) => {
   try {
-    const { question } = req.body;
+    const { question, provider: providerRaw } = req.body;
+    const provider = providerRaw === 'openai' ? 'openai' : 'claude';
     const wsId = req.user!.workspaceId;
 
     // Raccoglie dati reali dal DB + materiali consulenza
@@ -108,6 +109,35 @@ Regole:
 - Se hai materiali di consulenza, applica quello stile e metodologia
 - Formato: testo fluido, breve, professionale`;
 
+    const userMsg = question || 'Dammi i 3 consigli più importanti per migliorare la redditività del mio ristorante in base ai dati.';
+
+    // ===== Ramo ChatGPT / OpenAI =====
+    if (provider === 'openai') {
+      const openaiKey = process.env.OPENAI_API_KEY;
+      if (!openaiKey) {
+        return res.status(503).json({ error: 'ChatGPT non configurato: aggiungi OPENAI_API_KEY nel backend (Railway → Variables).' });
+      }
+      const r = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${openaiKey}` },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          max_tokens: 600,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userMsg },
+          ],
+        }),
+      });
+      if (!r.ok) {
+        const t = await r.text().catch(() => '');
+        throw new Error(`OpenAI ${r.status}: ${t.slice(0, 200)}`);
+      }
+      const data: any = await r.json();
+      return res.json({ answer: (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || 'Nessuna risposta', source: 'chatgpt' });
+    }
+
+    // ===== Ramo Claude (default) =====
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       const avgFc = menus.length > 0
@@ -133,7 +163,7 @@ Regole:
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 600,
         system: systemPrompt,
-        messages: [{ role: 'user', content: question || 'Dammi i 3 consigli più importanti per migliorare la redditività del mio ristorante in base ai dati.' }],
+        messages: [{ role: 'user', content: userMsg }],
       }),
     });
 
