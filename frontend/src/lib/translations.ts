@@ -3,6 +3,22 @@ export type Lang = 'it' | 'en';
 type Dict = Record<string, string>;
 
 const it: Dict = {
+  // Sezioni sidebar + azioni rapide
+  'nav.secOverview': 'Panoramica',
+  'nav.secKitchen': 'Cucina',
+  'nav.secBusiness': 'Gestione',
+  'nav.secAccount': 'Account',
+  'qa.title': 'Azione rapida',
+  'qa.subtitle': 'Le operazioni più frequenti, in un tap.',
+  'qa.newRecipe': 'Nuova ricetta',
+  'qa.newRecipeDesc': 'Distinta base e food cost automatico',
+  'qa.invoice': 'Carica fattura',
+  'qa.invoiceDesc': 'XML, PDF o foto: prezzi aggiornati da soli',
+  'qa.stock': 'Scorte & riordino',
+  'qa.stockDesc': 'Giacenze e lista riordino per fornitore',
+  'qa.ai': "Chiedi all'AI",
+  'qa.aiDesc': 'Consigli su costi, menu e margini',
+  'qa.close': 'Chiudi',
   // Navigazione
   'nav.dashboard': 'Dashboard',
   'nav.creativity': 'Creatività',
@@ -60,6 +76,22 @@ const it: Dict = {
 };
 
 const en: Dict = {
+  // Sidebar sections + quick actions
+  'nav.secOverview': 'Overview',
+  'nav.secKitchen': 'Kitchen',
+  'nav.secBusiness': 'Business',
+  'nav.secAccount': 'Account',
+  'qa.title': 'Quick action',
+  'qa.subtitle': 'Your most frequent tasks, one tap away.',
+  'qa.newRecipe': 'New recipe',
+  'qa.newRecipeDesc': 'Bill of materials and automatic food cost',
+  'qa.invoice': 'Upload invoice',
+  'qa.invoiceDesc': 'XML, PDF or photo: prices update themselves',
+  'qa.stock': 'Stock & reorder',
+  'qa.stockDesc': 'Inventory and reorder list by supplier',
+  'qa.ai': 'Ask the AI',
+  'qa.aiDesc': 'Advice on costs, menu and margins',
+  'qa.close': 'Close',
   // Navigation
   'nav.dashboard': 'Dashboard',
   'nav.creativity': 'Creativity',
