@@ -4,11 +4,14 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { isAuthenticated } from '@/lib/auth';
 import Sidebar from './Sidebar';
+import BottomNav from './BottomNav';
+import QuickActions, { QuickActionsFab } from './QuickActions';
 import { Menu } from 'lucide-react';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [qaOpen, setQaOpen] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -17,11 +20,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-dark-900">
+    <div className="min-h-screen">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Top bar (solo mobile) */}
-      <header className="md:hidden fixed top-0 left-0 right-0 h-14 bg-dark-800 border-b border-dark-600 flex items-center gap-3 px-4 z-20">
+      <header className="md:hidden fixed top-0 left-0 right-0 h-14 bg-dark-800/95 backdrop-blur-md border-b border-dark-600 flex items-center gap-3 px-4 z-20">
         <button
           onClick={() => setSidebarOpen(true)}
           aria-label="Apri menu"
@@ -34,9 +37,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </span>
       </header>
 
-      <main className="md:ml-60 px-4 md:px-6 pb-8 pt-20 md:pt-6 overflow-y-auto min-h-screen">
+      <main className="md:ml-60 px-4 md:px-6 pb-24 md:pb-8 pt-20 md:pt-6 overflow-y-auto min-h-screen animate-fadeup">
         {children}
       </main>
+
+      {/* Azioni rapide + nav mobile */}
+      <QuickActionsFab onOpen={() => setQaOpen(true)} />
+      <QuickActions open={qaOpen} onClose={() => setQaOpen(false)} />
+      <BottomNav />
     </div>
   );
 }

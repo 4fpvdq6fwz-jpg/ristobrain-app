@@ -17,21 +17,33 @@ const colorMap = {
   default: 'border-dark-600',
 };
 
+const iconBg = {
+  orange: 'bg-brand-500/15',
+  green: 'bg-green-500/15',
+  red: 'bg-red-500/15',
+  blue: 'bg-blue-500/15',
+  default: 'bg-dark-700',
+};
+
 export default function KpiCard({ title, value, subtitle, icon, trend, color = 'default' }: Props) {
   return (
     <div className={clsx('card-dark border', colorMap[color])}>
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-dark-200 font-medium">{title}</p>
-          <p className="text-2xl font-bold text-white mt-1">{value}</p>
+          <p className="text-[26px] font-extrabold tracking-tight text-white mt-1">{value}</p>
           {subtitle && <p className="text-xs text-dark-300 mt-1">{subtitle}</p>}
         </div>
-        {icon && <span className="text-2xl">{icon}</span>}
+        {icon && (
+          <span className={clsx('w-10 h-10 rounded-xl flex items-center justify-center text-xl', iconBg[color])}>
+            {icon}
+          </span>
+        )}
       </div>
       {trend && (
         <div className="mt-3 pt-3 border-t border-dark-600">
-          <span className={clsx('text-xs font-medium', trend.value >= 0 ? 'text-green-400' : 'text-red-400')}>
-            {trend.value >= 0 ? '↑' : '↓'} {Math.abs(trend.value)}%
+          <span className={clsx('text-xs font-bold', trend.value >= 0 ? 'text-green-400' : 'text-red-400')}>
+            {trend.value >= 0 ? '▲' : '▼'} {Math.abs(trend.value)}%
           </span>
           <span className="text-xs text-dark-300 ml-1">{trend.label}</span>
         </div>
