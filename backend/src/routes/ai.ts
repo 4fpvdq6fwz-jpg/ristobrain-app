@@ -58,7 +58,14 @@ router.delete('/knowledge/:id', authenticate, requireAdmin, async (req: Request,
 // POST /ai/suggest — Chiede all'AI (Claude o ChatGPT) consigli personalizzati sul ristorante
 router.post('/suggest', authenticate, async (req: Request, res: Response) => {
   try {
-    const { question, provider: providerRaw } = req.body;
+    const { question, provider: providerRaw, history: historyRaw } = req.body;
+    // Cronologia conversazione (opzionale): max 8 messaggi, solo ruoli validi
+    const history: { role: 'user' | 'assistant'; content: string }[] = Array.isArray(historyRaw)
+      ? historyRaw
+          .filter((m: any) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
+          .slice(-8)
+          .map((m: any) => ({ role: m.role, content: String(m.content).slice(0, 4000) }))
+      : [];
     const provider = providerRaw === 'openai' ? 'openai' : 'claude';
     const wsId = req.user!.workspaceId;
 
@@ -125,6 +132,7 @@ Regole:
           max_tokens: 600,
           messages: [
             { role: 'system', content: systemPrompt },
+            ...history,
             { role: 'user', content: userMsg },
           ],
         }),
@@ -163,7 +171,7 @@ Regole:
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 600,
         system: systemPrompt,
-        messages: [{ role: 'user', content: userMsg }],
+        messages: [...history, { role: 'user', content: userMsg }],
       }),
     });
 
