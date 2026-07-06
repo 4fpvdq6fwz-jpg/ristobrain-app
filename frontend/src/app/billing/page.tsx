@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 import { CreditCard, Zap, Check, AlertTriangle, Building2 } from 'lucide-react';
 
 interface BillingStatus {
-  plan: 'free' | 'pro' | 'business';
+  plan: 'free' | 'base' | 'pro' | 'business';
   subscriptionStatus: string | null;
   hasCustomer: boolean;
   expiresAt: string | null;
@@ -17,6 +17,21 @@ interface BillingStatus {
 
 const FREE_FEATURES = ['1 locale', 'Fino a 30 ricette', 'Fino a 50 ingredienti', 'AI Consulente base'];
 const FREE_FEATURES_EN = ['1 location', 'Up to 30 recipes', 'Up to 50 ingredients', 'Basic AI Advisor'];
+
+const BASE_FEATURES = [
+  '1 locale',
+  'Ricette e ingredienti illimitati',
+  'Analisi food cost',
+  'Caricamento fatture (XML/PDF/AI)',
+  'AI Consulente base',
+];
+const BASE_FEATURES_EN = [
+  '1 location',
+  'Unlimited recipes and ingredients',
+  'Food cost analytics',
+  'Invoice upload (XML/PDF/AI)',
+  'Basic AI Advisor',
+];
 
 const PRO_FEATURES = [
   'Locali illimitati',
@@ -89,7 +104,7 @@ export default function BillingPage() {
     }
   };
 
-  const handleUpgrade = async (plan: 'pro' | 'business') => {
+  const handleUpgrade = async (plan: 'base' | 'pro' | 'business') => {
     if (!isOwner) { toast.error(en ? 'Only the owner can manage the subscription' : "Solo il proprietario può gestire l'abbonamento"); return; }
     setRedirecting(plan);
     try {
@@ -116,14 +131,14 @@ export default function BillingPage() {
   const currentPlan = status?.plan || 'free';
   const isPastDue = status?.subscriptionStatus === 'past_due';
 
-  const planLabel = (p: string) => p === 'business' ? 'Business' : p === 'pro' ? 'Pro' : 'Free';
+  const planLabel = (p: string) => p === 'business' ? 'Business' : p === 'pro' ? 'Pro' : p === 'base' ? 'Base' : 'Free';
   const currentBadge = (
     <div className="absolute -top-3 left-4">
       <span className="text-xs bg-brand-500 text-white px-3 py-1 rounded-full font-semibold">{en ? 'Current plan' : 'Piano attuale'}</span>
     </div>
   );
 
-  const renderCta = (plan: 'pro' | 'business') => {
+  const renderCta = (plan: 'base' | 'pro' | 'business') => {
     if (currentPlan === plan) {
       return isOwner ? (
         <button onClick={handleManage} disabled={!!redirecting}
@@ -178,7 +193,7 @@ export default function BillingPage() {
         {loading ? (
           <div className="text-center py-16 text-dark-300">{en ? 'Loading...' : 'Caricamento...'}</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start">
 
             {/* Free */}
             <div className={`card-dark border ${currentPlan === 'free' ? 'border-brand-500/50' : 'border-dark-600'} relative`}>
@@ -194,6 +209,22 @@ export default function BillingPage() {
                 {(en ? FREE_FEATURES_EN : FREE_FEATURES).map((f) => <Feature key={f} f={f} color="text-dark-400" />)}
               </ul>
               {currentPlan === 'free' && <div className="text-xs text-center text-dark-400 py-2 bg-dark-700 rounded-lg">{en ? 'Current plan' : 'Piano corrente'}</div>}
+            </div>
+
+            {/* Base */}
+            <div className={`card-dark border ${currentPlan === 'base' ? 'border-brand-500/50' : 'border-dark-600'} relative`}>
+              {currentPlan === 'base' && currentBadge}
+              <div className="mb-4">
+                <h2 className="text-lg font-bold text-white">Base</h2>
+                <div className="flex items-baseline gap-1 mt-1">
+                  <span className="text-3xl font-bold text-white">€19</span>
+                  <span className="text-dark-300 text-sm">{en ? '/month' : '/mese'}</span>
+                </div>
+              </div>
+              <ul className="space-y-2 mb-6">
+                {(en ? BASE_FEATURES_EN : BASE_FEATURES).map((f) => <Feature key={f} f={f} color="text-brand-400" />)}
+              </ul>
+              {renderCta('base')}
             </div>
 
             {/* Pro */}
