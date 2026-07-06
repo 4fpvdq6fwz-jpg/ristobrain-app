@@ -44,9 +44,9 @@ export default function TodayPanel() {
           {alerts.length > 0 && (
             <Link
               href="/avvisi"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-red-500/25 bg-red-500/5 hover:bg-red-500/10 transition-colors"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-red-500/25 bg-red-500/5 hover:bg-red-500/10 transition-colors"
             >
-              <span className="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center shrink-0">
+              <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500/25 to-red-500/5 flex items-center justify-center shrink-0">
                 <TrendingUp size={16} className="text-red-400" />
               </span>
               <div className="flex-1">
@@ -61,9 +61,9 @@ export default function TodayPanel() {
           {restock.length > 0 && (
             <Link
               href="/scorte"
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-orange-500/25 bg-orange-500/5 hover:bg-orange-500/10 transition-colors"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-orange-500/25 bg-orange-500/5 hover:bg-orange-500/10 transition-colors"
             >
-              <span className="w-8 h-8 rounded-lg bg-orange-500/15 flex items-center justify-center shrink-0">
+              <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500/25 to-orange-500/5 flex items-center justify-center shrink-0">
                 <PackageX size={16} className="text-orange-400" />
               </span>
               <div className="flex-1">
