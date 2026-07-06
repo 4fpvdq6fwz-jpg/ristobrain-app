@@ -14,8 +14,11 @@ const getStripe = () => {
 // Mappa nome piano → price ID Stripe
 const priceForPlan = (plan: string): string => {
   if (plan === 'business') return config.stripeBusinessPriceId;
+  if (plan === 'base') return config.stripeBasePriceId;
   return config.stripeProPriceId;
 };
+
+const PAID_PLANS = ['base', 'pro', 'business'] as const;
 
 // GET /api/billing/status
 router.get('/status', authenticate, async (req: Request, res: Response) => {
@@ -37,16 +40,16 @@ router.get('/status', authenticate, async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/billing/checkout  body: { plan?: 'pro' | 'business' }
+// POST /api/billing/checkout  body: { plan?: 'base' | 'pro' | 'business' }
 router.post('/checkout', authenticate, async (req: Request, res: Response) => {
   try {
     const stripe = getStripe();
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-    const plan = (req.body && req.body.plan === 'business') ? 'business' : 'pro';
+    const plan = (req.body && PAID_PLANS.includes(req.body.plan)) ? req.body.plan : 'pro';
     const priceId = priceForPlan(plan);
     if (!priceId) {
-      const envName = plan === 'business' ? 'STRIPE_BUSINESS_PRICE_ID' : 'STRIPE_PRO_PRICE_ID';
+      const envName = plan === 'business' ? 'STRIPE_BUSINESS_PRICE_ID' : plan === 'base' ? 'STRIPE_BASE_PRICE_ID' : 'STRIPE_PRO_PRICE_ID';
       return res.status(400).json({ error: `Prezzo per il piano ${plan} non configurato. Aggiungi ${envName} nelle variabili del backend su Railway.` });
     }
 
@@ -129,7 +132,7 @@ export const stripeWebhookHandler = async (req: Request, res: Response) => {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
         const workspaceId = session.metadata?.workspaceId || session.client_reference_id;
-        const plan = session.metadata?.plan === 'business' ? 'business' : 'pro';
+        const plan = PAID_PLANS.includes(session.metadata?.plan as any) ? (session.metadata!.plan as string) : 'pro';
         if (workspaceId && session.customer && session.subscription) {
           await query(
             `UPDATE workspaces SET
@@ -148,7 +151,9 @@ export const stripeWebhookHandler = async (req: Request, res: Response) => {
         const sub = event.data.object as Stripe.Subscription;
         const isPro = sub.status === 'active' || sub.status === 'trialing';
         const priceId = (sub.items && sub.items.data && sub.items.data[0] && sub.items.data[0].price && sub.items.data[0].price.id) || '';
-        const planName = priceId && priceId === config.stripeBusinessPriceId ? 'business' : 'pro';
+        const planName = priceId === config.stripeBusinessPriceId ? 'business'
+          : priceId === config.stripeBasePriceId ? 'base'
+          : 'pro';
         await query(
           `UPDATE workspaces SET
             stripe_subscription_status = $1,
