@@ -64,7 +64,7 @@ export const billingApi = {
 
 // AI Consulente
 export const aiApi = {
-  suggest: (question: string, provider?: string) => api.post('/ai/suggest', { question, provider }),
+  suggest: (question: string, provider?: string, history?: { role: string; content: string }[]) => api.post('/ai/suggest', { question, provider, history }),
   listKnowledge: () => api.get('/ai/knowledge'),
   addKnowledge: (data: { title: string; content: string; source_type?: string }) =>
     api.post('/ai/knowledge', data),
