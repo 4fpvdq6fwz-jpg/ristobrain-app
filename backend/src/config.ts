@@ -12,6 +12,7 @@ export const config = {
   maxFileSize: 10 * 1024 * 1024, // 10MB
   stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
+  stripeBasePriceId: process.env.STRIPE_BASE_PRICE_ID || '',
   stripeProPriceId: process.env.STRIPE_PRO_PRICE_ID || '',
   stripeBusinessPriceId: process.env.STRIPE_BUSINESS_PRICE_ID || '',
   resendApiKey: process.env.RESEND_API_KEY || '',
