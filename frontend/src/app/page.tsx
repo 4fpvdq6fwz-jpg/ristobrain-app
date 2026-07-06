@@ -50,9 +50,9 @@ const faqs = [
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#0f0f0f] text-white">
+    <main className="min-h-screen bg-[#0f1115] text-white" style={{backgroundImage:'radial-gradient(1100px 520px at 85% -10%, rgba(255,107,53,0.07), transparent), radial-gradient(900px 480px at -5% 40%, rgba(91,141,239,0.05), transparent)'}}>
       {/* Nav */}
-      <header className="border-b border-white/10">
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0f1115]/80 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 font-bold text-lg">
             <Brain className="text-orange-500" size={22} />
@@ -62,7 +62,7 @@ export default function Home() {
             <Link href="/en" className="px-2 py-2 text-white/60 hover:text-white transition-colors" aria-label="English">EN</Link>
             <a href="#prezzi" className="hidden sm:block px-3 py-2 text-white/80 hover:text-white transition-colors">Prezzi</a>
             <Link href="/login" className="px-3 py-2 text-white/80 hover:text-white transition-colors">Accedi</Link>
-            <Link href="/login?tab=register" className="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-600 font-medium transition-colors">
+            <Link href="/login?tab=register" className="px-4 py-2 rounded-xl bg-gradient-to-br from-[#ff6b35] to-[#f25c26] hover:brightness-110 shadow-[0_6px_18px_rgba(255,107,53,0.3)] hover:-translate-y-px transition-all font-medium transition-colors">
               Prova gratis
             </Link>
           </nav>
@@ -82,7 +82,7 @@ export default function Home() {
           e ti aiuta a gestire allergeni, scorte e prezzi. Tutto in una sola piattaforma, anche da mobile.
         </p>
         <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link href="/login?tab=register" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-orange-500 hover:bg-orange-600 font-semibold transition-colors">
+          <Link href="/login?tab=register" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-br from-[#ff6b35] to-[#f25c26] hover:brightness-110 shadow-[0_6px_18px_rgba(255,107,53,0.3)] hover:-translate-y-px transition-all font-semibold transition-colors">
             Crea il tuo account gratuito <ArrowRight size={18} />
           </Link>
           <DemoButton />
@@ -102,8 +102,8 @@ export default function Home() {
         </p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {features.map((f) => (
-            <div key={f.title} className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 hover:border-orange-500/30 transition-colors">
-              <div className="w-11 h-11 rounded-xl bg-orange-500/10 flex items-center justify-center mb-4">
+            <div key={f.title} className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 hover:border-orange-500/40 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,0,0,0.35)] transition-all">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-orange-500/25 to-orange-500/5 border border-orange-500/20 flex items-center justify-center mb-4">
                 <f.icon className="text-orange-400" size={20} />
               </div>
               <h3 className="font-semibold text-lg mb-2">{f.title}</h3>
@@ -131,7 +131,7 @@ export default function Home() {
               <li className="flex items-center gap-2"><Check size={15} className="text-orange-400 shrink-0" /> Il prezzo giusto per ogni piatto</li>
             </ul>
           </div>
-          <div className="w-full md:w-80 shrink-0 rounded-2xl border border-white/10 bg-[#1a1a1a] p-5">
+          <div className="w-full md:w-80 shrink-0 rounded-2xl border border-white/10 bg-[#171a21] p-5">
             <div className="flex items-center gap-2 mb-4 text-sm font-semibold"><Brain size={16} className="text-orange-400" /> Consulente AI</div>
             <div className="space-y-3 text-sm">
               <div className="ml-6 bg-white/5 rounded-2xl rounded-tr-sm px-3 py-2 text-white/80">Come posso abbassare il food cost?</div>
@@ -149,7 +149,7 @@ export default function Home() {
         <div className="grid md:grid-cols-3 gap-6">
           {steps.map((s) => (
             <div key={s.n} className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-              <div className="w-9 h-9 rounded-full bg-orange-500 text-white font-bold flex items-center justify-center mb-4">{s.n}</div>
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#ff6b35] to-[#f25c26] shadow-[0_6px_18px_rgba(255,107,53,0.3)] text-white font-bold flex items-center justify-center mb-4">{s.n}</div>
               <h3 className="font-semibold text-lg mb-2">{s.title}</h3>
               <p className="text-sm text-white/60 leading-relaxed">{s.desc}</p>
             </div>
@@ -181,7 +181,7 @@ export default function Home() {
               Inizia gratis
             </Link>
           </div>
-          <div className="rounded-2xl border border-orange-500/40 bg-orange-500/[0.06] p-6 relative">
+          <div className="rounded-2xl border border-orange-500/50 bg-orange-500/[0.07] shadow-[0_0_48px_rgba(255,107,53,0.10)] p-6 relative">
             <span className="absolute -top-3 left-6 text-xs bg-orange-500 text-white px-3 py-1 rounded-full font-semibold">Consigliato</span>
             <h3 className="font-bold text-lg">Pro</h3>
             <div className="flex items-baseline gap-1 mt-1 mb-5">
@@ -195,7 +195,7 @@ export default function Home() {
                 </li>
               ))}
             </ul>
-            <Link href="/login?tab=register" className="block text-center py-2.5 rounded-lg bg-orange-500 hover:bg-orange-600 font-semibold text-sm transition-colors">
+            <Link href="/login?tab=register" className="block text-center py-2.5 rounded-xl bg-gradient-to-br from-[#ff6b35] to-[#f25c26] hover:brightness-110 shadow-[0_6px_18px_rgba(255,107,53,0.3)] hover:-translate-y-px transition-all font-semibold text-sm transition-colors">
               Passa a Pro
             </Link>
           </div>
@@ -222,7 +222,7 @@ export default function Home() {
           <p className="text-white/70 max-w-xl mx-auto mb-8">
             Bastano pochi minuti per inserire le prime ricette e vedere subito il food cost dei tuoi piatti.
           </p>
-          <Link href="/login?tab=register" className="inline-flex items-center gap-2 px-7 py-3 rounded-lg bg-orange-500 hover:bg-orange-600 font-semibold transition-colors">
+          <Link href="/login?tab=register" className="inline-flex items-center gap-2 px-7 py-3 rounded-xl bg-gradient-to-br from-[#ff6b35] to-[#f25c26] hover:brightness-110 shadow-[0_6px_18px_rgba(255,107,53,0.3)] hover:-translate-y-px transition-all font-semibold transition-colors">
             Crea il tuo account gratuito <ArrowRight size={18} />
           </Link>
         </div>
