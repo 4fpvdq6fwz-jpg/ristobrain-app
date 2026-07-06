@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { aiApi } from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -15,13 +15,28 @@ const SUGGERIMENTI = [
   'Analizza le mie vendite e dimmi cosa migliorare',
 ];
 
+type Msg = { role: 'user' | 'assistant'; content: string; source?: string };
+
+/* Mini renderer markdown (sicuro: testo prima escapato) */
+function mdToHtml(md: string): string {
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const inline = (s: string) => esc(s).replace(/\*\*(.+?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>');
+  return md.split('\n').map((line) => {
+    if (/^#{1,4} /.test(line)) return `<p class="font-bold text-white mt-2 mb-0.5">${inline(line.replace(/^#+ /, ''))}</p>`;
+    if (/^[-•*] /.test(line)) return `<p class="pl-4">• ${inline(line.replace(/^[-•*] /, ''))}</p>`;
+    if (/^\d+[.)] /.test(line)) return `<p class="pl-4">${inline(line)}</p>`;
+    if (line.trim() === '') return '<div class="h-2"></div>';
+    return `<p>${inline(line)}</p>`;
+  }).join('');
+}
+
 export default function AiPage() {
   const [domanda, setDomanda] = useState('');
-  const [risposta, setRisposta] = useState('');
+  const [messages, setMessages] = useState<Msg[]>([]);
   const [loadingChat, setLoadingChat] = useState(false);
-  const [source, setSource] = useState('');
   const [provider, setProvider] = useState('claude');
   const [isAdmin, setIsAdmin] = useState(false);
+  const chatRef = useRef<HTMLDivElement>(null);
 
   const [knowledge, setKnowledge] = useState<any[]>([]);
   const [loadingKb, setLoadingKb] = useState(true);
@@ -38,6 +53,10 @@ export default function AiPage() {
     if (admin) loadKnowledge();
   }, []);
 
+  useEffect(() => {
+    chatRef.current?.scrollTo({ top: chatRef.current.scrollHeight, behavior: 'smooth' });
+  }, [messages, loadingChat]);
+
   const loadKnowledge = async () => {
     try {
       const res = await aiApi.listKnowledge();
@@ -48,17 +67,17 @@ export default function AiPage() {
   };
 
   const chiedi = async (q?: string) => {
-    const question = q || domanda;
-    if (!question.trim()) return;
+    const question = (q || domanda).trim();
+    if (!question || loadingChat) return;
+    setDomanda('');
+    const history = messages.map(({ role, content }) => ({ role, content }));
+    setMessages((m) => [...m, { role: 'user', content: question }]);
     setLoadingChat(true);
-    setRisposta('');
-    setSource('');
     try {
-      const res = await aiApi.suggest(question, provider);
-      setRisposta(res.data.answer);
-      setSource(res.data.source);
+      const res = await aiApi.suggest(question, provider, history);
+      setMessages((m) => [...m, { role: 'assistant', content: res.data.answer, source: res.data.source }]);
     } catch (err: any) {
-      setRisposta(err?.response?.data?.error || 'Errore nel servizio AI. Riprova tra un momento.');
+      setMessages((m) => [...m, { role: 'assistant', content: err?.response?.data?.error || 'Errore nel servizio AI. Riprova tra un momento.', source: 'error' }]);
     } finally {
       setLoadingChat(false);
     }
@@ -95,6 +114,9 @@ export default function AiPage() {
     }
   };
 
+  const sourceLabel = (s?: string) =>
+    s === 'claude' ? '✨ Claude' : s === 'chatgpt' ? '✨ ChatGPT' : s === 'local' ? 'Analisi locale' : null;
+
   return (
     <AppLayout>
       <div className="max-w-5xl mx-auto">
@@ -102,19 +124,28 @@ export default function AiPage() {
           <h1 className="text-2xl font-bold text-white">🤖 Consulente AI</h1>
           <p className="text-dark-200 text-sm mt-1">
             Consigli personalizzati basati sui tuoi dati reali
-          </p>  
+          </p>
         </div>
 
         <div className={`grid grid-cols-1 ${isAdmin ? 'lg:grid-cols-3' : ''} gap-4`}>
           {/* Chat AI — 2 colonne */}
-          <div className={`${isAdmin ? 'lg:col-span-2' : ''} card-dark`}>
+          <div className={`${isAdmin ? 'lg:col-span-2' : ''} card-dark flex flex-col`}>
             <div className="flex items-center gap-2 mb-4 flex-wrap">
               <span className="text-xl">💬</span>
               <div>
                 <h2 className="text-base font-semibold text-white">Chiedi al Consulente</h2>
-                <p className="text-xs text-dark-400">Analisi basata sui tuoi dati reali</p>
+                <p className="text-xs text-dark-400">Conversazione basata sui tuoi dati reali</p>
               </div>
               <div className="ml-auto flex items-center gap-2">
+                {messages.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setMessages([])}
+                    className="text-xs px-2.5 py-1 rounded-lg border border-dark-500 text-dark-300 hover:text-white hover:border-dark-400 transition-colors"
+                  >
+                    ↺ Nuova chat
+                  </button>
+                )}
                 <span className="text-xs text-dark-400">Motore:</span>
                 <div className="flex bg-dark-700 rounded-lg p-1 gap-1">
                   {(['claude', 'openai'] as const).map((pv) => (
@@ -127,64 +158,74 @@ export default function AiPage() {
               </div>
             </div>
 
-            {(source === 'claude' || source === 'chatgpt' || source === 'local') && (
-              <div className="mb-3">
-                {source === 'claude' && (
-                  <span className="text-xs bg-brand-500/20 text-brand-400 px-2 py-0.5 rounded-full">✨ Powered by Claude</span>
-                )}
-                {source === 'chatgpt' && (
-                  <span className="text-xs bg-brand-500/20 text-brand-400 px-2 py-0.5 rounded-full">✨ Powered by ChatGPT</span>
-                )}
-                {source === 'local' && (
-                  <span className="text-xs bg-dark-600 text-dark-300 px-2 py-0.5 rounded-full">Analisi locale</span>
-                )}
-              </div>
-            )}
+            {/* Area conversazione */}
+            <div ref={chatRef} className="overflow-y-auto max-h-[440px] min-h-[120px] space-y-3 mb-4 pr-1">
+              {messages.length === 0 && !loadingChat && (
+                <div className="text-center py-6">
+                  <p className="text-3xl mb-2">👨‍🍳</p>
+                  <p className="text-sm text-dark-200 font-medium">Fai una domanda o parti da un suggerimento</p>
+                  <div className="flex flex-wrap gap-2 mt-4 justify-center">
+                    {SUGGERIMENTI.map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => chiedi(s)}
+                        className="text-xs px-3 py-1.5 rounded-full border border-dark-500 text-dark-200 hover:border-brand-500 hover:text-brand-400 transition-colors"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-            <div className="flex flex-wrap gap-2 mb-4">
-              {SUGGERIMENTI.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => { setDomanda(s); chiedi(s); }}
-                  className="text-xs px-3 py-1.5 rounded-full border border-dark-500 text-dark-200 hover:border-brand-500 hover:text-brand-400 transition-colors"
-                >
-                  {s}
-                </button>
+              {messages.map((m, i) => (
+                m.role === 'user' ? (
+                  <div key={i} className="flex justify-end">
+                    <div className="max-w-[85%] px-3.5 py-2.5 rounded-2xl rounded-tr-md bg-brand-500/15 border border-brand-500/25 text-sm text-white">
+                      {m.content}
+                    </div>
+                  </div>
+                ) : (
+                  <div key={i} className="flex justify-start">
+                    <div className="max-w-[92%] px-4 py-3 rounded-2xl rounded-tl-md bg-dark-700 border border-dark-600 text-sm text-dark-100 leading-relaxed">
+                      {sourceLabel(m.source) && (
+                        <span className="inline-block text-[10.5px] mb-1.5 px-2 py-0.5 rounded-full bg-brand-500/15 text-brand-400 font-medium">
+                          {sourceLabel(m.source)}
+                        </span>
+                      )}
+                      <div dangerouslySetInnerHTML={{ __html: mdToHtml(m.content) }} />
+                    </div>
+                  </div>
+                )
               ))}
+
+              {loadingChat && (
+                <div className="flex justify-start">
+                  <div className="px-4 py-3 rounded-2xl rounded-tl-md bg-dark-700 border border-dark-600 text-sm text-dark-300">
+                    <span className="animate-pulse">🤔 Sto analizzando i tuoi dati{knowledge.length > 0 ? ' e le tue consulenze' : ''}...</span>
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div className="flex gap-2">
+            {/* Input */}
+            <div className="flex gap-2 mt-auto">
               <input
                 type="text"
                 value={domanda}
                 onChange={(e) => setDomanda(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && chiedi()}
-                placeholder="Fai una domanda sul tuo ristorante..."
-                className="flex-1 bg-dark-700 border border-dark-500 rounded-lg px-3 py-2 text-sm text-white placeholder-dark-400 focus:outline-none focus:border-brand-500"
+                placeholder={messages.length > 0 ? 'Continua la conversazione...' : 'Fai una domanda sul tuo ristorante...'}
+                className="flex-1 bg-dark-700 border border-dark-500 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-dark-400 focus:outline-none focus:border-brand-500"
               />
               <button
                 onClick={() => chiedi()}
                 disabled={loadingChat || !domanda.trim()}
-                className="px-4 py-2 bg-brand-500 hover:bg-brand-600 disabled:opacity-40 text-white text-sm font-medium rounded-lg transition-colors"
+                className="px-5 py-2.5 btn-primary text-sm disabled:opacity-40"
               >
-                {loadingChat ? '...' : 'Chiedi'}
+                {loadingChat ? '...' : 'Invia'}
               </button>
             </div>
-
-            {loadingChat && (
-              <div className="mt-4 p-4 bg-dark-700 rounded-lg">
-                <div className="flex items-center gap-2 text-dark-300 text-sm">
-                  <span className="animate-pulse">🤔</span>
-                  <span>Sto analizzando i tuoi dati{knowledge.length > 0 ? ' e le tue consulenze' : ''}...</span>
-                </div>
-              </div>
-            )}
-
-            {risposta && !loadingChat && (
-              <div className="mt-4 p-4 bg-dark-700 rounded-lg">
-                <p className="text-sm text-dark-100 whitespace-pre-wrap leading-relaxed">{risposta}</p>
-              </div>
-            )}
           </div>
 
           {/* Knowledge Base — 1 colonna */}
