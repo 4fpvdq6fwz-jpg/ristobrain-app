@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { query, queryOne } from '../db';
 import { authenticate, requireRoles } from '../middleware/auth';
+import { enforcePlanLimit } from '../middleware/planLimits';
 
 const router = Router();
 
@@ -30,7 +31,7 @@ router.get('/:id', authenticate, async (req: Request, res: Response) => {
   }
 });
 
-router.post('/', authenticate, requireRoles('owner', 'admin'), async (req: Request, res: Response) => {
+router.post('/', authenticate, requireRoles('owner', 'admin'), enforcePlanLimit('locations'), async (req: Request, res: Response) => {
   try {
     const { name, address, city, seats, cuisineType, targetFcDefault } = req.body;
     if (!name) return res.status(400).json({ error: 'name is required' });

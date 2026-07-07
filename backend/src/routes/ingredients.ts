@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { query, queryOne, withTransaction } from '../db';
 import { authenticate, requireRoles } from '../middleware/auth';
+import { enforcePlanLimit } from '../middleware/planLimits';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -157,7 +158,7 @@ router.get('/:id', authenticate, async (req: Request, res: Response) => {
 });
 
 // POST /ingredients
-router.post('/', authenticate, requireRoles('owner', 'admin', 'manager'), async (req: Request, res: Response) => {
+router.post('/', authenticate, requireRoles('owner', 'admin', 'manager'), enforcePlanLimit('ingredients'), async (req: Request, res: Response) => {
   try {
     const {
       categoryId, code, name, purchaseUnit, recipeUnit, conversionFactor,

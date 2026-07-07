@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { query, queryOne, withTransaction } from '../db';
 import { authenticate, requireRoles } from '../middleware/auth';
+import { enforcePlanLimit } from '../middleware/planLimits';
 
 const router = Router();
 
@@ -120,7 +121,7 @@ router.get('/:id', authenticate, async (req: Request, res: Response) => {
 });
 
 // POST /recipes
-router.post('/', authenticate, requireRoles('owner', 'admin', 'manager', 'kitchen'), async (req: Request, res: Response) => {
+router.post('/', authenticate, requireRoles('owner', 'admin', 'manager', 'kitchen'), enforcePlanLimit('recipes'), async (req: Request, res: Response) => {
   try {
     const { categoryId, name, description, yieldPortions, prepTimeMin, cookTimeMin, items } = req.body;
     if (!name) return res.status(400).json({ error: 'name is required' });
@@ -189,7 +190,7 @@ router.put('/:id', authenticate, requireRoles('owner', 'admin', 'manager', 'kitc
 });
 
 // POST /recipes/:id/clone
-router.post('/:id/clone', authenticate, requireRoles('owner', 'admin', 'manager', 'kitchen'), async (req: Request, res: Response) => {
+router.post('/:id/clone', authenticate, requireRoles('owner', 'admin', 'manager', 'kitchen'), enforcePlanLimit('recipes'), async (req: Request, res: Response) => {
   try {
     const recipe = await queryOne<any>('SELECT * FROM recipes WHERE id = $1 AND workspace_id = $2 AND deleted_at IS NULL', [req.params.id, req.user!.workspaceId]);
     if (!recipe) return res.status(404).json({ error: 'Recipe not found' });
