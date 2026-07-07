@@ -81,9 +81,10 @@ function parseFatturaPA(xml: string): { supplier: string; date: string | null; l
 }
 
 async function parseWithAI(file: any): Promise<{ supplier: string; date: string | null; lines: ParsedLine[] }> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    throw new Error('Estrazione AI non disponibile: manca ANTHROPIC_API_KEY. Carica una fattura XML (fattura elettronica) oppure aggiungi la chiave su Railway.');
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  const openaiKey = process.env.OPENAI_API_KEY;
+  if (!anthropicKey && !openaiKey) {
+    throw new Error('Estrazione AI non disponibile: aggiungi ANTHROPIC_API_KEY oppure OPENAI_API_KEY su Railway. In alternativa carica una fattura XML (fattura elettronica).');
   }
   const b64 = file.buffer.toString('base64');
   const isPdf = (file.mimetype || '').includes('pdf') || (file.originalname || '').toLowerCase().endsWith('.pdf');
@@ -95,25 +96,55 @@ async function parseWithAI(file: any): Promise<{ supplier: string; date: string 
     'Rispondi SOLO con JSON valido, senza testo prima o dopo, nel formato esatto: ' +
     '{"supplier": string, "date": "YYYY-MM-DD" oppure null, "lines": [{"description": string, "quantity": number oppure null, "unit": string, "unitPrice": number oppure null}]}. ' +
     'unitPrice e il prezzo unitario netto (senza IVA). Includi solo prodotti e ingredienti; escludi trasporto, IVA, bolli, sconti e totali.';
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 2000,
-      messages: [{ role: 'user', content: [mediaBlock, { type: 'text', text: instruction }] }],
-    }),
-  });
-  if (!response.ok) {
-    const t = await response.text();
-    throw new Error('Errore servizio AI ' + response.status + ': ' + t.slice(0, 200));
+  let text: string;
+  if (anthropicKey) {
+    // ===== Claude (supporta PDF e immagini) =====
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': anthropicKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: [mediaBlock, { type: 'text', text: instruction }] }],
+      }),
+    });
+    if (!response.ok) {
+      const t = await response.text();
+      throw new Error('Errore servizio AI ' + response.status + ': ' + t.slice(0, 200));
+    }
+    const data: any = await response.json();
+    text = (data && data.content && data.content[0] && data.content[0].text) || '{}';
+  } else {
+    // ===== ChatGPT / OpenAI (vision: solo immagini, niente PDF) =====
+    if (isPdf) {
+      throw new Error('Con la sola OPENAI_API_KEY posso leggere foto/immagini della fattura, non i PDF. Carica una foto della fattura, una fattura XML, oppure aggiungi ANTHROPIC_API_KEY per il supporto PDF.');
+    }
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${openaiKey}` },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        max_tokens: 2000,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image_url', image_url: { url: `data:${file.mimetype || 'image/jpeg'};base64,${b64}` } },
+            { type: 'text', text: instruction },
+          ],
+        }],
+      }),
+    });
+    if (!response.ok) {
+      const t = await response.text();
+      throw new Error('Errore servizio AI ' + response.status + ': ' + t.slice(0, 200));
+    }
+    const data: any = await response.json();
+    text = (data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '{}';
   }
-  const data: any = await response.json();
-  let text: string = (data && data.content && data.content[0] && data.content[0].text) || '{}';
   text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
   const s = text.indexOf('{');
   const e = text.lastIndexOf('}');
