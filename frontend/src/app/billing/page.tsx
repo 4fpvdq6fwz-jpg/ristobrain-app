@@ -55,20 +55,16 @@ const PRO_FEATURES_EN = [
 const BUSINESS_FEATURES = [
   'Tutto del piano Pro',
   'Multi-ristorante con team e ruoli',
-  'Report white-label brandizzati',
-  'Esportazioni avanzate (PDF/Excel)',
-  'Onboarding e formazione dedicati',
-  'Supporto dedicato prioritario',
-  'API e integrazioni',
+  'Assistenza dedicata via email',
+  'Accesso anticipato alle nuove funzioni',
+  'Canale diretto per richieste su misura',
 ];
 const BUSINESS_FEATURES_EN = [
   'Everything in Pro',
   'Multi-restaurant with team & roles',
-  'White-label branded reports',
-  'Advanced exports (PDF/Excel)',
-  'Dedicated onboarding & training',
-  'Priority dedicated support',
-  'API & integrations',
+  'Dedicated email support',
+  'Early access to new features',
+  'Direct channel for custom requests',
 ];
 
 export default function BillingPage() {
