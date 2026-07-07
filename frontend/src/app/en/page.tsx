@@ -49,8 +49,16 @@ const steps = [
   { n: '3', title: 'Optimize your menu', desc: 'Read food cost, margins and menu engineering quadrants and decide where to act.' },
 ];
 
-const freeFeatures = ['1 location', 'Up to 30 recipes', 'Up to 50 ingredients', 'Invoice upload', 'Basic AI advisor'];
-const proFeatures = ['Everything in Free', 'Unlimited locations', 'Unlimited recipes and ingredients', 'Advanced AI advisor', 'Professional menu engineering', 'Advanced food cost analytics', 'Priority support'];
+const plans = [
+  { name: 'Free', price: '€0', highlight: false, cta: 'Start for free',
+    features: ['1 location', 'Up to 30 recipes', 'Up to 50 ingredients', 'Invoice upload', 'Basic AI advisor'] },
+  { name: 'Base', price: '€19', highlight: false, cta: 'Choose Base',
+    features: ['1 location', 'Unlimited recipes and ingredients', 'Food cost analytics', 'Invoice upload (XML/PDF/AI)', 'Basic AI advisor'] },
+  { name: 'Pro', price: '€49', highlight: true, cta: 'Choose Pro',
+    features: ['Unlimited locations', 'Unlimited recipes and ingredients', 'Creative Menu Engine', 'Advanced AI advisor', 'Professional menu engineering', 'Priority support'] },
+  { name: 'Business', price: '€99', highlight: false, cta: 'Choose Business',
+    features: ['Everything in Pro', 'Multi-restaurant with team & roles', 'Dedicated email support', 'Early access to new features'] },
+];
 
 const faqs = [
   { q: 'How does RistoBrain calculate food cost?', a: 'It starts from the real cost of ingredients (your supplier prices) and the quantities in your recipes, accounting for waste and yield. You can also update prices by uploading invoices.' },
@@ -173,47 +181,38 @@ export default function HomeEn() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="max-w-4xl mx-auto px-5 py-16">
+      <section id="pricing" className="max-w-6xl mx-auto px-5 py-16">
         <h2 className="text-3xl font-bold text-center mb-3">Simple, transparent pricing</h2>
         <p className="text-center text-white/60 max-w-2xl mx-auto mb-12">
-          Start for free, upgrade to Pro whenever you want. No lock-in, cancel anytime.
+          Start for free, switch plans anytime. No lock-in, cancel anytime.
         </p>
-        <div className="grid md:grid-cols-2 gap-5">
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-            <h3 className="font-bold text-lg">Free</h3>
-            <div className="flex items-baseline gap-1 mt-1 mb-5">
-              <span className="text-4xl font-extrabold">0€</span>
-              <span className="text-white/50 text-sm">/month</span>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 items-start">
+          {plans.map((p) => (
+            <div key={p.name} className={p.highlight
+              ? 'rounded-2xl border border-orange-500/50 bg-orange-500/[0.07] shadow-[0_0_48px_rgba(255,107,53,0.10)] p-6 relative'
+              : 'rounded-2xl border border-white/10 bg-white/[0.02] p-6 relative'}>
+              {p.highlight && (
+                <span className="absolute -top-3 left-6 text-xs bg-orange-500 text-white px-3 py-1 rounded-full font-semibold">Most popular</span>
+              )}
+              <h3 className="font-bold text-lg">{p.name}</h3>
+              <div className="flex items-baseline gap-1 mt-1 mb-5">
+                <span className="text-4xl font-extrabold">{p.price}</span>
+                <span className="text-white/50 text-sm">/month</span>
+              </div>
+              <ul className="space-y-2 mb-6">
+                {p.features.map((f) => (
+                  <li key={f} className="flex items-center gap-2 text-sm text-white/70">
+                    <Check size={15} className={p.highlight ? 'text-orange-400 shrink-0' : 'text-white/40 shrink-0'} /> {f}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/login?tab=register" className={p.highlight
+                ? 'block text-center py-2.5 rounded-xl bg-gradient-to-br from-[#ff6b35] to-[#f25c26] hover:brightness-110 shadow-[0_6px_18px_rgba(255,107,53,0.3)] hover:-translate-y-px transition-all font-semibold text-sm'
+                : 'block text-center py-2.5 rounded-xl border border-white/15 hover:border-white/30 text-white/90 font-semibold text-sm transition-colors'}>
+                {p.cta}
+              </Link>
             </div>
-            <ul className="space-y-2 mb-6">
-              {freeFeatures.map((f) => (
-                <li key={f} className="flex items-center gap-2 text-sm text-white/70">
-                  <Check size={15} className="text-white/40 shrink-0" /> {f}
-                </li>
-              ))}
-            </ul>
-            <Link href="/login?tab=register" className="block text-center py-2.5 rounded-lg border border-white/15 hover:border-white/30 text-white/90 font-semibold text-sm transition-colors">
-              Start for free
-            </Link>
-          </div>
-          <div className="rounded-2xl border border-orange-500/50 bg-orange-500/[0.07] shadow-[0_0_48px_rgba(255,107,53,0.10)] p-6 relative">
-            <span className="absolute -top-3 left-6 text-xs bg-orange-500 text-white px-3 py-1 rounded-full font-semibold">Recommended</span>
-            <h3 className="font-bold text-lg">Pro</h3>
-            <div className="flex items-baseline gap-1 mt-1 mb-5">
-              <span className="text-4xl font-extrabold">49€</span>
-              <span className="text-white/50 text-sm">/month</span>
-            </div>
-            <ul className="space-y-2 mb-6">
-              {proFeatures.map((f) => (
-                <li key={f} className="flex items-center gap-2 text-sm text-white/80">
-                  <Check size={15} className="text-orange-400 shrink-0" /> {f}
-                </li>
-              ))}
-            </ul>
-            <Link href="/login?tab=register" className="block text-center py-2.5 rounded-xl bg-gradient-to-br from-[#ff6b35] to-[#f25c26] hover:brightness-110 shadow-[0_6px_18px_rgba(255,107,53,0.3)] hover:-translate-y-px transition-all font-semibold text-sm transition-colors">
-              Go Pro
-            </Link>
-          </div>
+          ))}
         </div>
       </section>
 
