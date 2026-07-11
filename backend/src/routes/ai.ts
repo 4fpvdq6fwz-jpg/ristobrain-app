@@ -4,11 +4,11 @@ import { authenticate } from '../middleware/auth';
 
 // Middleware: solo admin o owner possono accedere alla knowledge base
 const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
-    const role = req.user?.role;
-    if (role !== 'admin' && role !== 'owner') {
-          return res.status(403).json({ error: 'Accesso riservato agli amministratori' });
-    }
-    return next();
+  const role = req.user?.role;
+  if (role !== 'admin' && role !== 'owner') {
+    return res.status(403).json({ error: 'Accesso riservato agli amministratori' });
+  }
+  return next();
 };
 
 const router = Router();
@@ -73,18 +73,18 @@ router.post('/suggest', authenticate, async (req: Request, res: Response) => {
     const [recipes, menus, ingredients, recentSales, knowledge] = await Promise.all([
       query<any>(`
         SELECT r.name,
-        COALESCE((SELECT COALESCE(SUM(ri2.quantity/NULLIF(i2.conversion_factor,0)*COALESCE(ip2.price_per_purchase_unit,0)*(1+i2.waste_pct/100.0))/NULLIF(MAX(r2.yield_portions),0),0)
-        FROM recipe_items ri2 JOIN ingredients i2 ON i2.id=ri2.ingredient_id
-        LEFT JOIN ingredient_prices ip2 ON ip2.ingredient_id=i2.id AND ip2.valid_from=(SELECT MAX(valid_from) FROM ingredient_prices WHERE ingredient_id=i2.id AND valid_from<=CURRENT_DATE)
-        JOIN recipes r2 ON r2.id=ri2.recipe_id WHERE ri2.recipe_id=r.id),0) as costo_porzione
+          COALESCE((SELECT COALESCE(SUM(ri2.quantity/NULLIF(i2.conversion_factor,0)*COALESCE(ip2.price_per_purchase_unit,0)*(1+i2.waste_pct/100.0))/NULLIF(MAX(r2.yield_portions),0),0)
+            FROM recipe_items ri2 JOIN ingredients i2 ON i2.id=ri2.ingredient_id
+            LEFT JOIN ingredient_prices ip2 ON ip2.ingredient_id=i2.id AND ip2.valid_from=(SELECT MAX(valid_from) FROM ingredient_prices WHERE ingredient_id=i2.id AND valid_from<=CURRENT_DATE)
+            JOIN recipes r2 ON r2.id=ri2.recipe_id WHERE ri2.recipe_id=r.id),0) as costo_porzione
         FROM recipes r WHERE r.workspace_id=$1 AND r.deleted_at IS NULL LIMIT 10`, [wsId]),
 
       query<any>(`
         SELECT m.name as menu, mi.name as piatto, mi.price as prezzo,
-        CASE WHEN mi.price>0 THEN ROUND((COALESCE((SELECT COALESCE(SUM(ri.quantity/NULLIF(i.conversion_factor,0)*COALESCE(ip.price_per_purchase_unit,0)*(1+i.waste_pct/100.0))/NULLIF(MAX(r.yield_portions),0),0)
-        FROM recipe_items ri JOIN ingredients i ON i.id=ri.ingredient_id
-        LEFT JOIN ingredient_prices ip ON ip.ingredient_id=i.id AND ip.valid_from=(SELECT MAX(valid_from) FROM ingredient_prices WHERE ingredient_id=i.id AND valid_from<=CURRENT_DATE)
-        JOIN recipes r ON r.id=ri.recipe_id WHERE ri.recipe_id=mi.recipe_id),0)/mi.price*100)::numeric,1) ELSE 0 END as fc_pct
+          CASE WHEN mi.price>0 THEN ROUND((COALESCE((SELECT COALESCE(SUM(ri.quantity/NULLIF(i.conversion_factor,0)*COALESCE(ip.price_per_purchase_unit,0)*(1+i.waste_pct/100.0))/NULLIF(MAX(r.yield_portions),0),0)
+            FROM recipe_items ri JOIN ingredients i ON i.id=ri.ingredient_id
+            LEFT JOIN ingredient_prices ip ON ip.ingredient_id=i.id AND ip.valid_from=(SELECT MAX(valid_from) FROM ingredient_prices WHERE ingredient_id=i.id AND valid_from<=CURRENT_DATE)
+            JOIN recipes r ON r.id=ri.recipe_id WHERE ri.recipe_id=mi.recipe_id),0)/mi.price*100)::numeric,1) ELSE 0 END as fc_pct
         FROM menus m JOIN menu_items mi ON mi.menu_id=m.id AND mi.status='active'
         WHERE m.workspace_id=$1 AND m.deleted_at IS NULL LIMIT 15`, [wsId]),
 
@@ -124,22 +124,33 @@ Regole:
       if (!openaiKey) {
         return res.status(503).json({ error: 'ChatGPT non configurato: aggiungi OPENAI_API_KEY nel backend (Railway → Variables).' });
       }
-      const r = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${openaiKey}` },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          max_tokens: 600,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            ...history,
-            { role: 'user', content: userMsg },
-          ],
-        }),
-      });
+      let r: any;
+      try {
+        r = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${openaiKey}` },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            max_tokens: 600,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              ...history,
+              { role: 'user', content: userMsg },
+            ],
+          }),
+        });
+      } catch (netErr: any) {
+        return res.status(502).json({ error: 'Chiamata ChatGPT fallita (rete). Riprova tra poco o usa il motore Claude.' });
+      }
       if (!r.ok) {
         const t = await r.text().catch(() => '');
-        throw new Error(`OpenAI ${r.status}: ${t.slice(0, 200)}`);
+        console.error('OpenAI error', r.status, t.slice(0, 300));
+        const msg = r.status === 429
+          ? 'Motore ChatGPT non disponibile: credito/quota OpenAI esaurito. Aggiungi credito su platform.openai.com, oppure usa il motore Claude.'
+          : r.status === 401
+          ? 'La chiave ChatGPT non è valida. Controlla OPENAI_API_KEY nel backend.'
+          : `Motore ChatGPT momentaneamente non disponibile (${r.status}). Riprova tra poco o usa il motore Claude.`;
+        return res.status(503).json({ error: msg });
       }
       const data: any = await r.json();
       return res.json({ answer: (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || 'Nessuna risposta', source: 'chatgpt' });
@@ -160,28 +171,40 @@ Regole:
       });
     }
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 600,
-        system: systemPrompt,
-        messages: [...history, { role: 'user', content: userMsg }],
-      }),
-    });
+    let response: any;
+    try {
+      response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 600,
+          system: systemPrompt,
+          messages: [...history, { role: 'user', content: userMsg }],
+        }),
+      });
+    } catch (netErr: any) {
+      return res.status(502).json({ error: 'Chiamata al servizio AI fallita (rete). Riprova tra poco.' });
+    }
 
-    if (!response.ok) throw new Error(`Anthropic API error: ${response.status}`);
+    if (!response.ok) {
+      const t = await response.text().catch(() => '');
+      console.error('Anthropic error', response.status, t.slice(0, 300));
+      const msg = response.status === 429
+        ? 'Il motore Claude è momentaneamente sovraccarico. Riprova tra poco.'
+        : `Motore Claude momentaneamente non disponibile (${response.status}). Riprova tra poco.`;
+      return res.status(503).json({ error: msg });
+    }
     const data: any = await response.json();
     return res.json({ answer: data.content?.[0]?.text || 'Nessuna risposta', source: 'claude' });
 
   } catch (err: any) {
     console.error('AI suggest error:', err);
-    return res.status(500).json({ error: 'Errore nel servizio AI: ' + err.message });
+    return res.status(500).json({ error: 'Il servizio AI è momentaneamente non disponibile. Riprova tra poco.' });
   }
 });
 
