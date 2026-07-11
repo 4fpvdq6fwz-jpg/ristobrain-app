@@ -1,18 +1,18 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
-  Calculator,
   TrendingUp,
-  ShieldAlert,
-  PackageX,
-  Bell,
-  Smartphone,
   ArrowRight,
   Check,
   Brain,
   Sparkles,
+  MapPin,
+  Shield,
+  FileText,
+  ChefHat,
 } from 'lucide-react';
 import DemoButton from '@/components/DemoButton';
+import LandingFeatures from '@/components/LandingFeatures';
 
 export const metadata: Metadata = {
   alternates: {
@@ -21,19 +21,17 @@ export const metadata: Metadata = {
   },
 };
 
-const features = [
-  { icon: Calculator, title: 'Food Cost automatico', desc: 'Calcola il costo di ogni piatto partendo dalle ricette e dai prezzi reali dei fornitori, sempre aggiornato.' },
-  { icon: TrendingUp, title: 'Menu Engineering', desc: 'Classifica i piatti nei quadranti Star, Plowhorse, Puzzle e Dog e scopri dove aumentare i margini.' },
-  { icon: ShieldAlert, title: 'Allergeni & HACCP', desc: 'Gestisci i 14 allergeni per ogni piatto e genera la documentazione a norma in un clic.' },
-  { icon: PackageX, title: 'Scorte & Ordini', desc: 'Tieni sotto controllo le giacenze e ricevi la lista di riordino divisa per fornitore.' },
-  { icon: Bell, title: 'Avvisi prezzi', desc: "Ti avvisiamo quando il prezzo di un ingrediente sale e intacca la marginalità dei tuoi piatti." },
-  { icon: Smartphone, title: 'Mobile & PWA', desc: "Usa RistoBrain da telefono, tablet o computer. Installa l'app sul tuo dispositivo senza store." },
-];
-
 const steps = [
   { n: '1', title: 'Inserisci ingredienti e ricette', desc: 'Carica i tuoi ingredienti con i prezzi dei fornitori e componi le ricette dei piatti.' },
   { n: '2', title: 'Aggiungi le vendite', desc: 'Importa o inserisci i dati di vendita per periodo e lascia che RistoBrain faccia i calcoli.' },
   { n: '3', title: 'Ottimizza il menu', desc: 'Leggi food cost, marginalità e quadranti di menu engineering e decidi dove agire.' },
+];
+
+const trust = [
+  { icon: MapPin, title: '100% italiano', desc: 'Pensato sulla ristorazione italiana, in italiano.' },
+  { icon: Shield, title: 'Dati cifrati & GDPR', desc: 'Password cifrate, connessioni protette, dati tuoi.' },
+  { icon: FileText, title: 'Conforme allergeni UE', desc: 'I 14 allergeni del Reg. UE 1169/2011.' },
+  { icon: ChefHat, title: 'Creato da uno chef', desc: 'Nato in cucina, non a tavolino.' },
 ];
 
 const plans = [
@@ -48,12 +46,12 @@ const plans = [
 ];
 
 const faqs = [
-  { q: 'Come calcola RistoBrain il food cost?', a: "Parte dal costo reale degli ingredienti (i prezzi dei tuoi fornitori) e dalle quantità nelle ricette, considerando sprechi e rese. Puoi aggiornare i prezzi anche caricando le fatture." },
-  { q: 'Devo installare qualcosa?', a: "No. RistoBrain funziona dal browser su qualsiasi dispositivo. Puoi anche installarlo come app (PWA) su telefono e tablet, senza passare da uno store." },
-  { q: 'Posso caricare le fatture dei fornitori?', a: "Sì. Carichi la fattura elettronica XML oppure un PDF o una foto, e il sistema estrae ingredienti e prezzi in automatico." },
-  { q: 'I miei dati sono al sicuro?', a: "Sì: password cifrate, connessioni protette e la possibilità di esportare o cancellare i tuoi dati in qualsiasi momento." },
-  { q: 'Posso provarlo gratis?', a: "Sì, esiste un piano gratuito senza carta di credito. Puoi anche provare subito la demo con dati di esempio." },
-  { q: 'Come funziona il piano Pro?', a: "49€ al mese: locali, ricette e ingredienti illimitati, AI avanzata e supporto prioritario. Puoi disdire quando vuoi." },
+  { q: 'Come calcola RistoBrain il food cost?', a: 'Parte dal costo reale degli ingredienti (i prezzi dei tuoi fornitori) e dalle quantità nelle ricette, considerando sprechi e rese. Puoi aggiornare i prezzi anche caricando le fatture.' },
+  { q: 'Devo installare qualcosa?', a: 'No. RistoBrain funziona dal browser su qualsiasi dispositivo. Puoi anche installarlo come app (PWA) su telefono e tablet, senza passare da uno store.' },
+  { q: 'Posso caricare le fatture dei fornitori?', a: 'Sì. Carichi la fattura elettronica XML oppure un PDF o una foto, e il sistema estrae ingredienti e prezzi in automatico.' },
+  { q: 'I miei dati sono al sicuro?', a: 'Sì: password cifrate, connessioni protette e la possibilità di esportare o cancellare i tuoi dati in qualsiasi momento.' },
+  { q: 'Posso provarlo gratis?', a: 'Sì, esiste un piano gratuito senza carta di credito. Puoi anche provare subito la demo con dati di esempio.' },
+  { q: 'Come funziona il piano Pro?', a: '49€ al mese: locali, ricette e ingredienti illimitati, AI avanzata e supporto prioritario. Puoi disdire quando vuoi.' },
 ];
 
 export default function Home() {
@@ -102,22 +100,37 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features */}
-      <section className="max-w-6xl mx-auto px-5 py-16">
-        <h2 className="text-3xl font-bold text-center mb-3">Tutto quello che serve per gestire i costi</h2>
-        <p className="text-center text-white/60 max-w-2xl mx-auto mb-12">
-          Dalle ricette ai margini: RistoBrain riunisce gli strumenti che un ristoratore usa ogni giorno.
-        </p>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {features.map((f) => (
-            <div key={f.title} className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 hover:border-orange-500/40 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,0,0,0.35)] transition-all">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-orange-500/25 to-orange-500/5 border border-orange-500/20 flex items-center justify-center mb-4">
-                <f.icon className="text-orange-400" size={20} />
+      {/* Trust strip */}
+      <section className="max-w-6xl mx-auto px-5 pb-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {trust.map((tr) => (
+            <div key={tr.title} className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 flex items-start gap-3">
+              <div className="w-9 h-9 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
+                <tr.icon className="text-orange-400" size={17} />
               </div>
-              <h3 className="font-semibold text-lg mb-2">{f.title}</h3>
-              <p className="text-sm text-white/60 leading-relaxed">{f.desc}</p>
+              <div>
+                <div className="font-semibold text-sm">{tr.title}</div>
+                <div className="text-xs text-white/50 leading-snug mt-0.5">{tr.desc}</div>
+              </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Features (interactive cards + modal) */}
+      <LandingFeatures lang="it" />
+
+      {/* Founder note */}
+      <section className="max-w-4xl mx-auto px-5 py-12">
+        <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-8 md:p-10">
+          <div className="flex items-center gap-2 text-xs font-medium text-orange-300 bg-orange-500/10 border border-orange-500/20 rounded-full px-3 py-1 mb-5 w-fit">
+            <ChefHat size={13} /> Dal fondatore
+          </div>
+          <p className="text-xl md:text-2xl font-medium leading-relaxed text-white/90">
+            «L’ho creato perché in cucina il margine si perde nei dettagli: un prezzo che sale, una
+            porzione sbagliata, un piatto che non rende. RistoBrain tiene tutto sotto controllo al posto tuo.»
+          </p>
+          <div className="mt-5 text-sm text-white/60">Davide Massatani — chef e fondatore di RistoBrain</div>
         </div>
       </section>
 
@@ -247,7 +260,7 @@ export default function Home() {
             Software per food cost, menu engineering, allergeni e gestione ristorante.
           </p>
           <p className="text-xs text-white/30 mt-4">
-            RistoBrain è un servizio di [Ragione Sociale] - P.IVA [P.IVA] - [Indirizzo] - davide.inchef@gmail.com
+            RistoBrain è un servizio di Accanto di Massatani Davide S.a.s. — P.IVA 04039140548 — Largo Carducci 34, 06034 Foligno (PG) — accanto@accantosas.com
           </p>
           <p className="text-xs text-white/30 mt-2">
             &copy; {new Date().getFullYear()} RistoBrain. Tutti i diritti riservati.
