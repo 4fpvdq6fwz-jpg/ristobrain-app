@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { query, queryOne } from '../db';
 import { authenticate, requireRoles } from '../middleware/auth';
+import { checkCreativity, incUsage } from '../usage';
 
 const router = Router();
 const MODEL = 'claude-sonnet-4-6';
@@ -155,6 +156,13 @@ function extractJson(raw: string): any {
 router.post('/generate', authenticate, async (req: Request, res: Response) => {
   try {
     const wsId = req.user!.workspaceId;
+
+    // Limite Motore Creatività per piano (Free/Base 2 generazioni totali, Pro/Business illimitato)
+    const usageChk = await checkCreativity(wsId);
+    if (!usageChk.ok) {
+      return res.status(402).json({ error: usageChk.message, upgrade: true });
+    }
+
     const {
       restaurant_id,
       tipo_menu,
@@ -344,7 +352,7 @@ FORMATO OUTPUT (JSON esatto):
       provider,
     };
 
-    // 7. Log su menu_generations
+    // 7. Log su menu_generations + incremento uso creatività
     try {
       await query(
         `INSERT INTO menu_generations (id, workspace_id, restaurant_id, brief_input, output, usato_web, model, created_by)
@@ -354,6 +362,7 @@ FORMATO OUTPUT (JSON esatto):
     } catch (logErr) {
       console.error('menu_generations log fail (non bloccante):', logErr);
     }
+    await incUsage(wsId, 'creativity', 'total');
 
     return res.json(result);
   } catch (err: any) {
