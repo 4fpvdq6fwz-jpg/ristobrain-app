@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { query } from '../db';
 import { authenticate } from '../middleware/auth';
+import { checkConsultant, incUsage, monthPeriod } from '../usage';
 
 // Middleware: solo admin o owner possono accedere alla knowledge base
 const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
@@ -68,6 +69,12 @@ router.post('/suggest', authenticate, async (req: Request, res: Response) => {
       : [];
     const provider = providerRaw === 'openai' ? 'openai' : 'claude';
     const wsId = req.user!.workspaceId;
+
+    // Limite d'uso Consulente AI per piano (Free 10/mese, Base 30, Pro 300, Business illimitato)
+    const usageChk = await checkConsultant(wsId);
+    if (!usageChk.ok) {
+      return res.status(402).json({ error: usageChk.message, upgrade: true });
+    }
 
     // Raccoglie dati reali dal DB + materiali consulenza
     const [recipes, menus, ingredients, recentSales, knowledge] = await Promise.all([
@@ -153,6 +160,7 @@ Regole:
         return res.status(503).json({ error: msg });
       }
       const data: any = await r.json();
+      await incUsage(wsId, 'consultant', monthPeriod());
       return res.json({ answer: (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || 'Nessuna risposta', source: 'chatgpt' });
     }
 
@@ -200,6 +208,7 @@ Regole:
       return res.status(503).json({ error: msg });
     }
     const data: any = await response.json();
+    await incUsage(wsId, 'consultant', monthPeriod());
     return res.json({ answer: data.content?.[0]?.text || 'Nessuna risposta', source: 'claude' });
 
   } catch (err: any) {
