@@ -17,6 +17,7 @@ import aiRouter from './routes/ai';
 import invoicesRouter from './routes/invoices';
 import billingRouter, { stripeWebhookHandler } from './routes/billing';
 import menuEngineRouter from './routes/menuEngine';
+import adminRouter from './routes/admin';
 
 const app = express();
 
@@ -50,6 +51,7 @@ app.use('/api/ai', aiRouter);
 app.use('/api/invoices', invoicesRouter);
 app.use('/api/billing', billingRouter);
 app.use('/api/creativita', menuEngineRouter);
+app.use('/api/admin', adminRouter);
 
 // 404 and error handlers
 app.use(notFound);
@@ -63,7 +65,7 @@ async function startServer() {
   }
 
   app.listen(config.port, () => {
-    console.log(`🍽️  RistoBrain API running on port ${config.port} [${config.nodeEnv}]`);
+    console.log(`🍽️ RistoBrain API running on port ${config.port} [${config.nodeEnv}]`);
     console.log(`📊 Health check: http://localhost:${config.port}/health`);
   });
 }
