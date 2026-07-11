@@ -1,17 +1,17 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
-  Calculator,
   TrendingUp,
-  ShieldAlert,
-  PackageX,
-  Bell,
-  Smartphone,
   ArrowRight,
   Check,
   Brain,
   Sparkles,
+  MapPin,
+  Shield,
+  FileText,
+  ChefHat,
 } from 'lucide-react';
+import LandingFeatures from '@/components/LandingFeatures';
 
 const SITE_URL = 'https://app.ristobrain.com';
 
@@ -34,19 +34,17 @@ export const metadata: Metadata = {
   },
 };
 
-const features = [
-  { icon: Calculator, title: 'Automatic Food Cost', desc: 'Calculate the cost of every dish from your recipes and real supplier prices, always up to date.' },
-  { icon: TrendingUp, title: 'Menu Engineering', desc: 'Classify dishes into Star, Plowhorse, Puzzle and Dog quadrants and find where to grow your margins.' },
-  { icon: ShieldAlert, title: 'Allergens & HACCP', desc: 'Manage the 14 allergens for every dish and generate compliant documentation in one click.' },
-  { icon: PackageX, title: 'Stock & Orders', desc: 'Keep your stock under control and get a reorder list grouped by supplier.' },
-  { icon: Bell, title: 'Price alerts', desc: 'We alert you when an ingredient price rises and starts eating into your margins.' },
-  { icon: Smartphone, title: 'Mobile & PWA', desc: 'Use RistoBrain on your phone, tablet or computer. Install the app on your device without a store.' },
-];
-
 const steps = [
   { n: '1', title: 'Add ingredients and recipes', desc: 'Load your ingredients with supplier prices and build the recipes for your dishes.' },
   { n: '2', title: 'Add your sales', desc: 'Import or enter sales data per period and let RistoBrain crunch the numbers.' },
   { n: '3', title: 'Optimize your menu', desc: 'Read food cost, margins and menu engineering quadrants and decide where to act.' },
+];
+
+const trust = [
+  { icon: MapPin, title: 'Made in Italy', desc: 'Built around Italian hospitality.' },
+  { icon: Shield, title: 'Encrypted & GDPR', desc: 'Encrypted passwords, secure connections, your data.' },
+  { icon: FileText, title: 'EU allergen compliant', desc: 'The 14 allergens of EU Reg. 1169/2011.' },
+  { icon: ChefHat, title: 'Built by a chef', desc: 'Born in the kitchen, not at a desk.' },
 ];
 
 const plans = [
@@ -117,22 +115,37 @@ export default function HomeEn() {
         </div>
       </section>
 
-      {/* Features */}
-      <section className="max-w-6xl mx-auto px-5 py-16">
-        <h2 className="text-3xl font-bold text-center mb-3">Everything you need to control costs</h2>
-        <p className="text-center text-white/60 max-w-2xl mx-auto mb-12">
-          From recipes to margins: RistoBrain brings together the tools a restaurateur uses every day.
-        </p>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {features.map((f) => (
-            <div key={f.title} className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 hover:border-orange-500/40 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,0,0,0.35)] transition-all">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-orange-500/25 to-orange-500/5 border border-orange-500/20 flex items-center justify-center mb-4">
-                <f.icon className="text-orange-400" size={20} />
+      {/* Trust strip */}
+      <section className="max-w-6xl mx-auto px-5 pb-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {trust.map((tr) => (
+            <div key={tr.title} className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 flex items-start gap-3">
+              <div className="w-9 h-9 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
+                <tr.icon className="text-orange-400" size={17} />
               </div>
-              <h3 className="font-semibold text-lg mb-2">{f.title}</h3>
-              <p className="text-sm text-white/60 leading-relaxed">{f.desc}</p>
+              <div>
+                <div className="font-semibold text-sm">{tr.title}</div>
+                <div className="text-xs text-white/50 leading-snug mt-0.5">{tr.desc}</div>
+              </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Features (interactive cards + modal) */}
+      <LandingFeatures lang="en" />
+
+      {/* Founder note */}
+      <section className="max-w-4xl mx-auto px-5 py-12">
+        <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-8 md:p-10">
+          <div className="flex items-center gap-2 text-xs font-medium text-orange-300 bg-orange-500/10 border border-orange-500/20 rounded-full px-3 py-1 mb-5 w-fit">
+            <ChefHat size={13} /> From the founder
+          </div>
+          <p className="text-xl md:text-2xl font-medium leading-relaxed text-white/90">
+            “I built it because in the kitchen margin is lost in the details: a price that goes up, a
+            wrong portion, a dish that doesn’t pay. RistoBrain keeps it all under control for you.”
+          </p>
+          <div className="mt-5 text-sm text-white/60">Davide Massatani — chef and founder of RistoBrain</div>
         </div>
       </section>
 
@@ -261,6 +274,9 @@ export default function HomeEn() {
             Software for food cost, menu engineering, allergens and restaurant management.
           </p>
           <p className="text-xs text-white/30 mt-4">
+            RistoBrain is a service of Accanto di Massatani Davide S.a.s. — VAT 04039140548 — Largo Carducci 34, 06034 Foligno (PG), Italy — accanto@accantosas.com
+          </p>
+          <p className="text-xs text-white/30 mt-2">
             &copy; {new Date().getFullYear()} RistoBrain. All rights reserved.
           </p>
         </div>
