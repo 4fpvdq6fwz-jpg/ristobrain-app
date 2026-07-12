@@ -56,6 +56,12 @@ export const adminApi = {
 };
 
 // Billing
+export const teamApi = {
+  getMembers: () => api.get('/team/members'),
+  addMember: (data: { email: string; password: string; fullName: string; role?: string }) => api.post('/team/members', data),
+  removeMember: (userId: string) => api.delete(`/team/members/${userId}`),
+};
+
 export const billingApi = {
   status: () => api.get('/billing/status'),
   createCheckout: (plan?: string) => api.post('/billing/checkout', plan ? { plan } : {}),
