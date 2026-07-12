@@ -37,7 +37,8 @@ const it: Dict = {
   'nav.suppliers': 'Fornitori',
   'nav.stock': 'Scorte & Ordini',
   'nav.billing': 'Piano',
-  'nav.settings': 'Impostazioni',
+  'nav.team': 'Team',
+    'nav.settings': 'Impostazioni',
   'nav.logout': 'Esci',
   // Comuni
   'common.language': 'Lingua',
@@ -110,7 +111,8 @@ const en: Dict = {
   'nav.suppliers': 'Suppliers',
   'nav.stock': 'Stock & Orders',
   'nav.billing': 'Plan',
-  'nav.settings': 'Settings',
+  'nav.team': 'Team',
+    'nav.settings': 'Settings',
   'nav.logout': 'Log out',
   // Common
   'common.language': 'Language',
