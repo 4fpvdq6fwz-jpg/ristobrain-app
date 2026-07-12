@@ -18,6 +18,7 @@ import invoicesRouter from './routes/invoices';
 import billingRouter, { stripeWebhookHandler } from './routes/billing';
 import menuEngineRouter from './routes/menuEngine';
 import adminRouter from './routes/admin';
+import teamRouter from './routes/team';
 
 const app = express();
 
@@ -52,6 +53,7 @@ app.use('/api/invoices', invoicesRouter);
 app.use('/api/billing', billingRouter);
 app.use('/api/creativita', menuEngineRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/team', teamRouter);
 
 // 404 and error handlers
 app.use(notFound);
