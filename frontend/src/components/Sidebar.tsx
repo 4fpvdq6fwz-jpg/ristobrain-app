@@ -7,7 +7,7 @@ import { clearAuth, getAuth } from '@/lib/auth';
 import {
   LayoutDashboard, Package, BookOpen, UtensilsCrossed,
   TrendingUp, BarChart2, ShoppingCart, LogOut,
-  MapPin, Truck, Brain, CreditCard, Settings, X, Bell, PackageX, ShieldAlert, FileText,
+  MapPin, Truck, Brain, CreditCard, Settings, X, Bell, PackageX, ShieldAlert, FileText, Users,
   Sparkles, ScrollText
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -54,7 +54,8 @@ const navSections: NavSection[] = [
     items: [
       { href: '/locations', labelKey: 'nav.locations', icon: MapPin },
       { href: '/regole', labelKey: 'nav.rules', icon: ScrollText },
-      { href: '/billing', labelKey: 'nav.billing', icon: CreditCard },
+      { href: '/team', labelKey: 'nav.team', icon: Users },
+  { href: '/billing', labelKey: 'nav.billing', icon: CreditCard },
       { href: '/impostazioni', labelKey: 'nav.settings', icon: Settings },
     ],
   },
