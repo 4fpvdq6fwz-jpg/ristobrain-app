@@ -51,6 +51,7 @@ export const authApi = {
 
 // Admin (riservato master)
 export const adminApi = {
+  setPlan: (data: { email?: string; userId?: string; plan: string }) => api.post('/admin/set-plan', data),
   stats: () => api.get('/auth/admin/stats'),
   deleteAccount: (userId: string) => api.post('/auth/admin/delete-account', { userId }),
 };
