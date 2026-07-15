@@ -127,8 +127,7 @@ export default function Home() {
             <ChefHat size={13} /> Dal fondatore
           </div>
           <p className="text-xl md:text-2xl font-medium leading-relaxed text-white/90">
-            «L’ho creato perché in cucina il margine si perde nei dettagli: un prezzo che sale, una
-            porzione sbagliata, un piatto che non rende. RistoBrain tiene tutto sotto controllo al posto tuo.»
+            «L’ho creato perché in cucina la mole di lavoro spegne la creatività: quando corri tutto il giorno, i piatti nuovi non arrivano e i conti si perdono nei dettagli. RistoBrain tiene sotto controllo i costi e ti aiuta ogni giorno a creare menu e piatti nuovi, soprattutto nei momenti di calo creativo.»
           </p>
           <div className="mt-5 text-sm text-white/60">Davide Massatani — chef e fondatore di RistoBrain</div>
         </div>
