@@ -142,8 +142,7 @@ export default function HomeEn() {
             <ChefHat size={13} /> From the founder
           </div>
           <p className="text-xl md:text-2xl font-medium leading-relaxed text-white/90">
-            “I built it because in the kitchen margin is lost in the details: a price that goes up, a
-            wrong portion, a dish that doesn’t pay. RistoBrain keeps it all under control for you.”
+            “I built it because in the kitchen the workload kills creativity: when you’re slammed all day, new dishes stop coming and the numbers slip through the cracks. RistoBrain keeps your costs under control and helps you create new menus and dishes every day — especially when you hit a creative slump.”
           </p>
           <div className="mt-5 text-sm text-white/60">Davide Massatani — chef and founder of RistoBrain</div>
         </div>
