@@ -4,10 +4,13 @@ import { useEffect, useState } from 'react';
 import AppLayout from '@/components/AppLayout';
 import { adminApi } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Users, CheckCircle2, Trash2 } from 'lucide-react';
+import { Users, CheckCircle2, Trash2, Gift } from 'lucide-react';
 
 export default function AdminPage() {
   const [data, setData] = useState<any>(null);
+  const [planEmail, setPlanEmail] = useState('');
+  const [planValue, setPlanValue] = useState('business');
+  const [planSaving, setPlanSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [denied, setDenied] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -44,6 +47,22 @@ export default function AdminPage() {
     }
   };
 
+
+  const assignPlan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!planEmail) { toast.error('Inserisci la email'); return; }
+    setPlanSaving(true);
+    try {
+      await adminApi.setPlan({ email: planEmail.trim(), plan: planValue });
+      toast.success('Piano ' + planValue.toUpperCase() + ' assegnato');
+      setPlanEmail('');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Impossibile assegnare il piano');
+    } finally {
+      setPlanSaving(false);
+    }
+  };
+
   return (
     <AppLayout>
       <div className="max-w-4xl mx-auto">
@@ -51,6 +70,20 @@ export default function AdminPage() {
           <h1 className="text-2xl font-bold text-white flex items-center gap-2">
             <Users size={22} className="text-brand-400" /> Registrazioni
           </h1>
+        <form onSubmit={assignPlan} className="bg-gray-800 border border-gray-700 rounded-xl p-5 space-y-4 my-6">
+          <div className="flex items-center gap-2 text-white font-semibold"><Gift className="w-5 h-5 text-orange-400" /> Assegna piano (promo / gratis)</div>
+          <p className="text-sm text-gray-400">Assegna un piano a un account senza pagamento, utile per amici e tester.</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <input className="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white md:col-span-2" placeholder="Email account" type="email" value={planEmail} onChange={(e) => setPlanEmail(e.target.value)} />
+            <select className="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white" value={planValue} onChange={(e) => setPlanValue(e.target.value)}>
+              <option value="free">Free</option>
+              <option value="base">Base</option>
+              <option value="pro">Pro</option>
+              <option value="business">Business</option>
+            </select>
+          </div>
+          <button type="submit" disabled={planSaving} className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold px-4 py-2 rounded-lg">{planSaving ? 'Assegno...' : 'Assegna piano'}</button>
+        </form>
           <p className="text-dark-200 text-sm mt-1">Panoramica degli account registrati e del loro utilizzo</p>
         </div>
 
