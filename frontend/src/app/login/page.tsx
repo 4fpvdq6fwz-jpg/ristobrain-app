@@ -48,6 +48,7 @@ export default function LoginPage() {
         fullName: form.fullName,
         workspaceName: form.workspaceName,
         phone: form.phone,
+        referralCode: form.referralCode,
       });
       setAuth({ token: res.data.token, user: res.data.user, workspace: res.data.workspace });
       toast.success('Account creato! Benvenuto!');
@@ -134,6 +135,11 @@ export default function LoginPage() {
                 <label className="text-sm text-dark-200 block mb-1">Nome ristorante</label>
                 <input name="workspaceName" value={form.workspaceName} onChange={handleChange}
                   className="input-dark" placeholder="Da Mario" required />
+              </div>
+              <div>
+                <label className="text-sm text-dark-200 block mb-1">Codice segnalazione (facoltativo)</label>
+                <input name="referralCode" value={form.referralCode || ''} onChange={handleChange}
+                  className="input-dark" placeholder="Es. MARIO2" />
               </div>
               <button type="submit" disabled={loading} className="btn-primary w-full mt-2">
                 {loading ? 'Creazione...' : 'Crea account gratuito'}
