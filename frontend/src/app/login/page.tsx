@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 
 export default function LoginPage() {
   const [tab, setTab] = useState<'login' | 'register'>('login');
+  const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ email: '', password: '', fullName: '', workspaceName: '', phone: '' });
 
@@ -99,8 +100,9 @@ export default function LoginPage() {
               </div>
               <div>
                 <label className="text-sm text-dark-200 block mb-1">Password</label>
-                <input name="password" type="password" value={form.password} onChange={handleChange}
+                <input name="password" type={showPwd ? 'text' : 'password'} value={form.password} onChange={handleChange}
                   className="input-dark" placeholder="••••••••" required />
+              <label className="flex items-center gap-2 text-xs text-gray-400 mt-2 select-none cursor-pointer"><input type="checkbox" checked={showPwd} onChange={(e) => setShowPwd(e.target.checked)} className="accent-orange-500" /> Mostra password</label>
               </div>
               <div className="text-right -mt-2">
                 <a href="/recupera-password" className="text-xs text-brand-400 hover:underline">Password dimenticata?</a>
@@ -128,8 +130,9 @@ export default function LoginPage() {
               </div>
               <div>
                 <label className="text-sm text-dark-200 block mb-1">Password (min. 8 caratteri)</label>
-                <input name="password" type="password" value={form.password} onChange={handleChange}
+                <input name="password" type={showPwd ? 'text' : 'password'} value={form.password} onChange={handleChange}
                   className="input-dark" placeholder="••••••••" required />
+              <label className="flex items-center gap-2 text-xs text-gray-400 mt-2 select-none cursor-pointer"><input type="checkbox" checked={showPwd} onChange={(e) => setShowPwd(e.target.checked)} className="accent-orange-500" /> Mostra password</label>
               </div>
               <div>
                 <label className="text-sm text-dark-200 block mb-1">Nome ristorante</label>
