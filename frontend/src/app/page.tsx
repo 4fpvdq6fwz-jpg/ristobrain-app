@@ -133,6 +133,21 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Concierge */}
+      <section className="max-w-4xl mx-auto px-5 py-12">
+        <div className="rounded-3xl border border-orange-500/30 bg-gradient-to-r from-orange-500/10 to-transparent p-8 md:p-10">
+          <div className="flex items-center gap-2 text-xs font-medium text-orange-300 bg-orange-500/10 border border-orange-500/20 rounded-full px-3 py-1 mb-5 w-fit">
+            <ChefHat size={13} /> Servizio Concierge
+          </div>
+          <h2 className="text-2xl md:text-3xl font-bold text-white">Ci pensiamo noi al posto tuo</h2>
+          <p className="text-white/70 mt-3 max-w-2xl">Configurazione, inserimento dati, food cost e menu engineering fatti per te da Chef Davide. Un servizio completo su appuntamento, per partire senza pensieri.</p>
+          <div className="flex items-center gap-5 flex-wrap mt-6">
+            <div className="text-3xl font-bold text-white">250 &euro; <span className="text-sm font-normal text-white/50">una tantum · su richiesta</span></div>
+            <a href="https://calendar.app.google/jxfbEwDjLbfEg4X67" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-5 py-3 rounded-xl">Prenota un appuntamento</a>
+          </div>
+        </div>
+      </section>
+
       {/* Consulente AI */}
       <section className="max-w-5xl mx-auto px-5 py-16">
         <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-8 md:p-10 flex flex-col md:flex-row items-center gap-8">
