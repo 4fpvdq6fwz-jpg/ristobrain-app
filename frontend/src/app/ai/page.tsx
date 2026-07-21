@@ -32,6 +32,8 @@ function mdToHtml(md: string): string {
 
 export default function AiPage() {
   const [domanda, setDomanda] = useState('');
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [loadingChat, setLoadingChat] = useState(false);
   const [provider, setProvider] = useState('claude');
@@ -116,6 +118,25 @@ export default function AiPage() {
 
   const sourceLabel = (s?: string) =>
     s === 'claude' ? '✨ Claude' : s === 'chatgpt' ? '✨ ChatGPT' : s === 'local' ? 'Analisi locale' : null;
+
+  const onUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', f);
+      fd.append('title', f.name);
+      await aiApi.uploadKnowledgeFile(fd);
+      toast.success('Documento caricato e aggiunto al contesto AI');
+      loadKnowledge();
+    } catch (err: any) {
+      toast.error((err && err.response && err.response.data && err.response.data.error) || 'Impossibile caricare il file');
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
 
   return (
     <AppLayout>
@@ -234,6 +255,13 @@ export default function AiPage() {
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h2 className="text-base font-semibold text-white">📚 Le mie consulenze</h2>
+          <div className="mb-3">
+            <input ref={fileRef} type="file" onChange={onUploadFile} accept=".pdf,.docx,.xlsx,.xls,.csv,.txt,.md" className="hidden" />
+            <button type="button" onClick={() => fileRef.current && fileRef.current.click()} disabled={uploading} className="inline-flex items-center gap-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white text-sm font-medium px-3 py-2 rounded-lg">
+              {uploading ? 'Carico...' : 'Carica documento (PDF, Word, Excel, CSV, testo)'}
+            </button>
+            <p className="text-xs text-gray-500 mt-1">Il testo del file viene aggiunto alle tue consulenze e usato dal Consulente AI come contesto.</p>
+          </div>
                 <p className="text-xs text-dark-400 mt-0.5">L'AI impara dal tuo stile</p>
               </div>
               <button
