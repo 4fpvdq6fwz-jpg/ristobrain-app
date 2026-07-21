@@ -11,6 +11,29 @@ export default function AdminPage() {
   const [planEmail, setPlanEmail] = useState('');
   const [planValue, setPlanValue] = useState('business');
   const [planSaving, setPlanSaving] = useState(false);
+  const [refCodes, setRefCodes] = useState<any[]>([]);
+  const [refForm, setRefForm] = useState({ code: '', referrerName: '', amount: '2' });
+  const [refSaving, setRefSaving] = useState(false);
+  const loadReferrals = async () => {
+    try { const { data } = await adminApi.getReferralCodes(); setRefCodes(data.codes || []); } catch (e) { /* noop */ }
+  };
+  useEffect(() => { loadReferrals(); }, []);
+  const createCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!refForm.code || !refForm.referrerName) { toast.error('Inserisci codice e nome segnalatore'); return; }
+    setRefSaving(true);
+    try {
+      await adminApi.createReferralCode({ code: refForm.code.trim(), referrerName: refForm.referrerName.trim(), amountCents: Math.round(parseFloat(refForm.amount || '2') * 100) });
+      toast.success('Codice creato');
+      setRefForm({ code: '', referrerName: '', amount: '2' });
+      loadReferrals();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || 'Errore nella creazione del codice');
+    } finally { setRefSaving(false); }
+  };
+  const toggleCode = async (code: string, active: boolean) => {
+    try { await adminApi.toggleReferralCode({ code, active }); loadReferrals(); } catch (e) { /* noop */ }
+  };
   const [loading, setLoading] = useState(true);
   const [denied, setDenied] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -84,6 +107,37 @@ export default function AdminPage() {
           </div>
           <button type="submit" disabled={planSaving} className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold px-4 py-2 rounded-lg">{planSaving ? 'Assegno...' : 'Assegna piano'}</button>
         </form>
+        <div className="bg-gray-800 border border-gray-700 rounded-xl p-5 space-y-4 mb-6">
+          <div className="flex items-center gap-2 text-white font-semibold"><Gift className="w-5 h-5 text-orange-400" /> Segnalatori (provvigioni)</div>
+          <p className="text-sm text-gray-400">Crea un codice per un segnalatore: matura la provvigione per ogni mese in cui un cliente da lui portato resta abbonato.</p>
+          <form onSubmit={createCode} className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <input className="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white" placeholder="Codice (es. MARIO2)" value={refForm.code} onChange={(e) => setRefForm({ ...refForm, code: e.target.value })} />
+            <input className="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white md:col-span-2" placeholder="Nome segnalatore" value={refForm.referrerName} onChange={(e) => setRefForm({ ...refForm, referrerName: e.target.value })} />
+            <div className="flex gap-2">
+              <input className="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white w-24" placeholder="euro/mese" value={refForm.amount} onChange={(e) => setRefForm({ ...refForm, amount: e.target.value })} />
+              <button type="submit" disabled={refSaving} className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold px-4 py-2 rounded-lg flex-1">Crea</button>
+            </div>
+          </form>
+          {refCodes.length > 0 && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead><tr className="text-gray-400 text-left"><th className="py-2">Codice</th><th>Segnalatore</th><th>Clienti</th><th>Mesi</th><th>Maturato</th><th></th></tr></thead>
+                <tbody>
+                  {refCodes.map((c) => (
+                    <tr key={c.code} className="border-t border-gray-700 text-gray-200">
+                      <td className="py-2 font-mono">{c.code}</td>
+                      <td>{c.referrer_name}</td>
+                      <td>{c.customers}</td>
+                      <td>{c.months}</td>
+                      <td className="font-semibold text-white">{(c.total_cents / 100).toFixed(2)} euro</td>
+                      <td><button onClick={() => toggleCode(c.code, !c.active)} className={c.active ? 'text-green-400' : 'text-gray-500'}>{c.active ? 'Attivo' : 'Sospeso'}</button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
           <p className="text-dark-200 text-sm mt-1">Panoramica degli account registrati e del loro utilizzo</p>
         </div>
 
