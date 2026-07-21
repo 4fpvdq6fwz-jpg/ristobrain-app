@@ -12,6 +12,7 @@ function ResetInner() {
   const router = useRouter();
   const token = params.get('token') || '';
   const [pwd, setPwd] = useState('');
+  const [showPwd, setShowPwd] = useState(false);
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
@@ -60,7 +61,7 @@ function ResetInner() {
         <div>
           <label className="text-xs text-white/60 block mb-1">Nuova password</label>
           <input
-            type="password"
+            type={showPwd ? 'text' : 'password'}
             value={pwd}
             onChange={(e) => setPwd(e.target.value)}
             required
@@ -71,7 +72,7 @@ function ResetInner() {
         <div>
           <label className="text-xs text-white/60 block mb-1">Conferma password</label>
           <input
-            type="password"
+            type={showPwd ? 'text' : 'password'}
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             required
@@ -79,6 +80,7 @@ function ResetInner() {
             placeholder="Ripeti la password"
           />
         </div>
+        <label className="flex items-center gap-2 text-xs text-gray-400 mb-3 select-none cursor-pointer"><input type="checkbox" checked={showPwd} onChange={(e) => setShowPwd(e.target.checked)} className="accent-orange-500" /> Mostra password</label>
         <button
           type="submit"
           disabled={loading}
