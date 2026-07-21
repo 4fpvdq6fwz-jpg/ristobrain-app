@@ -129,6 +129,27 @@ export const stripeWebhookHandler = async (req: Request, res: Response) => {
 
   try {
     switch (event.type) {
+      case 'invoice.paid': {
+        const inv: any = event.data.object;
+        const custId = inv.customer;
+        if (custId) {
+          const ws = await queryOne<any>('SELECT id, referral_code FROM workspaces WHERE stripe_customer_id = $1', [custId]);
+          if (ws && ws.referral_code) {
+            const _n = new Date();
+            const period = `${_n.getUTCFullYear()}-${String(_n.getUTCMonth() + 1).padStart(2, '0')}`;
+            const rc = await queryOne<any>('SELECT amount_cents FROM referral_codes WHERE LOWER(code) = LOWER($1) AND active = TRUE', [ws.referral_code]);
+            if (rc) {
+              await query(
+                `INSERT INTO referral_earnings (code, workspace_id, period, amount_cents)
+                 VALUES ($1, $2, $3, $4)
+                 ON CONFLICT (workspace_id, period) DO NOTHING`,
+                [ws.referral_code, ws.id, period, rc.amount_cents]
+              );
+            }
+          }
+        }
+        break;
+      }
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
         const workspaceId = session.metadata?.workspaceId || session.client_reference_id;
