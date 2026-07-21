@@ -18,6 +18,6 @@ export const config = {
   resendApiKey: process.env.RESEND_API_KEY || '',
   mailFrom: process.env.MAIL_FROM || 'RistoBrain <noreply@ristobrain.com>',
   appUrl: process.env.APP_URL || 'https://app.ristobrain.com',
-  masterEmails: (process.env.MASTER_EMAILS || 'chef@demo.it,davide.inchef@gmail.com,massatani.d@gmail.com')
+  masterEmails: (process.env.MASTER_EMAILS || 'chef@demo.it,davide.inchef@gmail.com,massatani.d@gmail.com,accanto@accantosas.com')
     .split(',').map((e) => e.trim().toLowerCase()).filter(Boolean),
 };
