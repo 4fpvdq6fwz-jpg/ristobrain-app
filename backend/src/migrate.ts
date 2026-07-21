@@ -138,6 +138,13 @@ export async function runMigrations(): Promise<void> {
     await client.query(`CREATE INDEX IF NOT EXISTS idx_referral_earnings_code ON referral_earnings (code)`);
     console.log('✅ Referral tables ready');
 
+    // Allinea accanto@accantosas.com al piano Business (come il demo)
+    await client.query(`UPDATE workspaces SET plan = 'business' WHERE id IN (
+      SELECT wu.workspace_id FROM workspace_users wu JOIN users u ON u.id = wu.user_id
+      WHERE LOWER(u.email) = 'accanto@accantosas.com'
+    )`);
+    console.log('✅ accanto@accantosas.com allineato a Business');
+
     // Always ensure demo account exists (ON CONFLICT DO NOTHING = safe to re-run)
     const seedPath = path.join(__dirname, 'db', 'seed.sql');
     if (fs.existsSync(seedPath)) {
