@@ -7,7 +7,7 @@ import { clearAuth, getAuth } from '@/lib/auth';
 import {
   LayoutDashboard, Package, BookOpen, UtensilsCrossed,
   TrendingUp, BarChart2, ShoppingCart, LogOut,
-  MapPin, Truck, Brain, CreditCard, Settings, X, Bell, PackageX, ShieldAlert, FileText, Users,
+  MapPin, Truck, Brain, CreditCard, Settings, X, Bell, PackageX, ShieldAlert, FileText, Users, ChevronDown,
   Sparkles, ScrollText
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -26,6 +26,7 @@ const navSections: NavSection[] = [
       { href: '/dashboard', labelKey: 'nav.dashboard', icon: LayoutDashboard },
       { href: '/ai', labelKey: 'nav.ai', icon: Brain },
       { href: '/creativita', labelKey: 'nav.creativity', icon: Sparkles },
+      { href: '/menus', labelKey: 'nav.menus', icon: UtensilsCrossed },
     ],
   },
   {
@@ -33,7 +34,7 @@ const navSections: NavSection[] = [
     items: [
       { href: '/recipes', labelKey: 'nav.recipes', icon: BookOpen },
       { href: '/ingredients', labelKey: 'nav.ingredients', icon: Package },
-      { href: '/menus', labelKey: 'nav.menus', icon: UtensilsCrossed },
+      
       { href: '/allergeni', labelKey: 'nav.allergens', icon: ShieldAlert },
       { href: '/scorte', labelKey: 'nav.stock', icon: PackageX },
       { href: '/suppliers', labelKey: 'nav.suppliers', icon: Truck },
@@ -66,6 +67,7 @@ export default function Sidebar({ open = false, onClose }: { open?: boolean; onC
   const router = useRouter();
   const { t } = useLang();
   const [mounted, setMounted] = useState(false);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ 'nav.secKitchen': true, 'nav.secBusiness': true, 'nav.secAccount': true });
   useEffect(() => setMounted(true), []);
   const auth = mounted ? getAuth() : null;
 
@@ -107,10 +109,10 @@ export default function Sidebar({ open = false, onClose }: { open?: boolean; onC
           {navSections.map((section) => (
             <div key={section.titleKey} className="mb-2">
               <p className="px-3 pt-2 pb-1 text-[10.5px] font-bold uppercase tracking-wider text-dark-400">
-                {t(section.titleKey)}
+                <button type="button" onClick={() => setCollapsed((c) => ({ ...c, [section.titleKey]: !c[section.titleKey] }))} className="flex items-center justify-between w-full uppercase tracking-wide">{t(section.titleKey)}<ChevronDown size={13} className={collapsed[section.titleKey] ? 'opacity-60 -rotate-90 transition-transform' : 'opacity-60 transition-transform'} /></button>
               </p>
               <ul className="space-y-0.5">
-                {section.items.map(({ href, labelKey, icon: Icon }) => {
+                {!collapsed[section.titleKey] && section.items.map(({ href, labelKey, icon: Icon }) => {
                   const active = pathname === href || pathname.startsWith(href + '/');
                   return (
                     <li key={href}>
