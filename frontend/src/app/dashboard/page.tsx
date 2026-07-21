@@ -66,6 +66,19 @@ export default function DashboardPage() {
         ) : (
           <>
             <TodayPanel />
+        <a href="https://calendar.app.google/jxfbEwDjLbfEg4X67" target="_blank" rel="noopener noreferrer" className="block mb-6 rounded-2xl border border-orange-500/30 bg-gradient-to-r from-orange-500/10 to-transparent p-5 hover:border-orange-500/60 transition">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <div className="flex items-center gap-2 text-white font-semibold text-lg"><Sparkles className="w-5 h-5 text-orange-400" /> Concierge — Servizio completo</div>
+              <p className="text-sm text-gray-400 mt-1 max-w-xl">Ci pensiamo noi: configurazione, inserimento dati, food cost e menu engineering fatti per te da Chef Davide. Su appuntamento.</p>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold text-white">250 &euro;</div>
+              <div className="text-xs text-gray-400 mb-2">una tantum · su richiesta</div>
+              <span className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-4 py-2 rounded-lg">Prenota un appuntamento <ChevronRight className="w-4 h-4" /></span>
+            </div>
+          </div>
+        </a>
 
             {/* Onboarding guidato (nuovo workspace) */}
             {!setupComplete && (
