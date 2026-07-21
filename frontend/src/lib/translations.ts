@@ -4,7 +4,7 @@ type Dict = Record<string, string>;
 
 const it: Dict = {
   // Sezioni sidebar + azioni rapide
-  'nav.secOverview': 'Panoramica',
+  'nav.secOverview': 'Principali',
   'nav.secKitchen': 'Cucina',
   'nav.secBusiness': 'Gestione',
   'nav.secAccount': 'Account',
@@ -78,7 +78,7 @@ const it: Dict = {
 
 const en: Dict = {
   // Sidebar sections + quick actions
-  'nav.secOverview': 'Overview',
+  'nav.secOverview': 'Main',
   'nav.secKitchen': 'Kitchen',
   'nav.secBusiness': 'Business',
   'nav.secAccount': 'Account',
