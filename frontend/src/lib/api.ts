@@ -74,6 +74,18 @@ export const billingApi = {
 
 // AI Consulente
 export const aiApi = {
+  uploadKnowledgeFile: (formData: FormData) => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('rb_token') : null;
+    return fetch(BASE_URL + '/kb/upload', {
+      method: 'POST',
+      headers: token ? { Authorization: 'Bearer ' + token } : {},
+      body: formData,
+    }).then(async (r) => {
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) { const err: any = new Error((data && data.error) || 'Errore caricamento'); err.response = { data, status: r.status }; throw err; }
+      return { data };
+    });
+  },
   suggest: (question: string, provider?: string, history?: { role: string; content: string }[]) => api.post('/ai/suggest', { question, provider, history }),
   listKnowledge: () => api.get('/ai/knowledge'),
   addKnowledge: (data: { title: string; content: string; source_type?: string }) =>
