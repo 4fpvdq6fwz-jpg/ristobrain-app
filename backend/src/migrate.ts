@@ -114,6 +114,30 @@ export async function runMigrations(): Promise<void> {
     await client.query(`CREATE INDEX IF NOT EXISTS idx_menu_generations_ws ON menu_generations (workspace_id)`);
     console.log('✅ Creative menu engine tables ready');
 
+    // Referral / provvigioni segnalatori
+    await client.query(`CREATE TABLE IF NOT EXISTS referral_codes (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      code TEXT UNIQUE NOT NULL,
+      referrer_name TEXT NOT NULL,
+      note TEXT,
+      amount_cents INTEGER NOT NULL DEFAULT 200,
+      active BOOLEAN NOT NULL DEFAULT TRUE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`);
+    await client.query(`ALTER TABLE workspaces ADD COLUMN IF NOT EXISTS referral_code TEXT`);
+    await client.query(`ALTER TABLE workspaces ADD COLUMN IF NOT EXISTS referral_at TIMESTAMPTZ`);
+    await client.query(`CREATE TABLE IF NOT EXISTS referral_earnings (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      code TEXT NOT NULL,
+      workspace_id UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+      period TEXT NOT NULL,
+      amount_cents INTEGER NOT NULL DEFAULT 200,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE (workspace_id, period)
+    )`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_referral_earnings_code ON referral_earnings (code)`);
+    console.log('✅ Referral tables ready');
+
     // Always ensure demo account exists (ON CONFLICT DO NOTHING = safe to re-run)
     const seedPath = path.join(__dirname, 'db', 'seed.sql');
     if (fs.existsSync(seedPath)) {
