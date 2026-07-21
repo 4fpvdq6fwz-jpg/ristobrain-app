@@ -142,6 +142,16 @@ router.post('/register', async (req: Request, res: Response) => {
     const payload = { userId, workspaceId, role: 'owner', email: email.toLowerCase(), sessionVersion: 0 };
     const token = jwt.sign(payload, config.jwtSecret, { expiresIn: config.jwtExpiresIn as any });
 
+    // Referral: associa un codice segnalazione valido al nuovo workspace (non bloccante)
+    try {
+      const _refCode = (req.body?.referralCode || '').toString().trim();
+      if (_refCode) {
+        const _rc = await query<any>('SELECT code FROM referral_codes WHERE LOWER(code) = LOWER($1) AND active = TRUE', [_refCode]);
+        if (_rc && _rc.length > 0) {
+          await query('UPDATE workspaces SET referral_code = $1, referral_at = NOW() WHERE id = $2', [_rc[0].code, workspaceId]);
+        }
+      }
+    } catch (_e) { console.error('referral capture failed:', _e); }
     return res.status(201).json({
       token,
       user: { id: userId, email, fullName },
