@@ -145,6 +145,19 @@ export async function runMigrations(): Promise<void> {
     )`);
     console.log('✅ accanto@accantosas.com allineato a Business');
 
+    // Referral v2: proprietario del codice + richieste codice
+    await client.query(`ALTER TABLE referral_codes ADD COLUMN IF NOT EXISTS owner_user_id UUID REFERENCES users(id) ON DELETE SET NULL`);
+    await client.query(`CREATE TABLE IF NOT EXISTS referral_requests (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      email TEXT,
+      full_name TEXT,
+      status TEXT NOT NULL DEFAULT 'pending',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`);
+    await client.query(`CREATE INDEX IF NOT EXISTS idx_referral_codes_owner ON referral_codes (owner_user_id)`);
+    console.log('✅ Referral v2 (owner + requests) ready');
+
     // Always ensure demo account exists (ON CONFLICT DO NOTHING = safe to re-run)
     const seedPath = path.join(__dirname, 'db', 'seed.sql');
     if (fs.existsSync(seedPath)) {
