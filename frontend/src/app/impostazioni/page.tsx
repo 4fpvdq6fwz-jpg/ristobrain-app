@@ -1,15 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import AppLayout from '@/components/AppLayout';
-import { authApi } from '@/lib/api';
+import { authApi, referralApi } from '@/lib/api';
 import { getAuth, clearAuth } from '@/lib/auth';
 import { useLang } from '@/components/LanguageProvider';
 import toast from 'react-hot-toast';
-import { Lock, Trash2, Download, Shield, AlertTriangle, Users } from 'lucide-react';
+import { Lock, Trash2, Download, Shield, AlertTriangle, Users, Gift } from 'lucide-react';
 
-const MASTER_EMAILS = ['chef@demo.it', 'davide.inchef@gmail.com', 'massatani.d@gmail.com'];
+const MASTER_EMAILS = ['chef@demo.it', 'davide.inchef@gmail.com', 'massatani.d@gmail.com', 'accanto@accantosas.com'];
 
 export default function ImpostazioniPage() {
   const { lang } = useLang();
@@ -17,6 +17,9 @@ export default function ImpostazioniPage() {
   const auth = getAuth();
   const isMaster = !!auth?.user?.email && MASTER_EMAILS.includes(auth.user.email.toLowerCase());
   const [pwdForm, setPwdForm] = useState({ current: '', newPwd: '', confirm: '' });
+  const [refInfo, setRefInfo] = useState<any>(null);
+  const [refReq, setRefReq] = useState(false);
+  useEffect(() => { referralApi.me().then((r: any) => setRefInfo(r.data)).catch(() => {}); }, []);
   const [deletePassword, setDeletePassword] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
@@ -65,11 +68,43 @@ export default function ImpostazioniPage() {
     }
   };
 
+  const requestRefCode = async () => {
+    setRefReq(true);
+    try {
+      await referralApi.request();
+      toast.success('Richiesta inviata! Ti assegneremo un codice a breve.');
+      referralApi.me().then((r: any) => setRefInfo(r.data)).catch(() => {});
+    } catch (e: any) {
+      toast.error(e?.response?.data?.error || 'Errore invio richiesta');
+    } finally { setRefReq(false); }
+  };
+
   return (
     <AppLayout>
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-white">{en ? 'Account Settings' : 'Impostazioni Account'}</h1>
+        {refInfo && (
+          <div className="bg-gray-800 border border-gray-700 rounded-xl p-5 space-y-3">
+            <div className="flex items-center gap-2 text-white font-semibold"><Gift className="w-5 h-5 text-orange-400" /> Programma segnalazioni</div>
+            {refInfo.code ? (
+              <>
+                <p className="text-sm text-gray-400">Il tuo codice: <span className="font-mono text-white">{refInfo.code}</span>. Chi lo inserisce alla registrazione ti fa guadagnare <strong className="text-white">2&euro; per ogni mese effettivamente pagato dal cliente</strong>.</p>
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div className="bg-gray-900 rounded-lg py-3"><div className="text-xl font-bold text-white">{refInfo.customers}</div><div className="text-xs text-gray-400">clienti</div></div>
+                  <div className="bg-gray-900 rounded-lg py-3"><div className="text-xl font-bold text-white">{refInfo.months}</div><div className="text-xs text-gray-400">mesi pagati</div></div>
+                  <div className="bg-gray-900 rounded-lg py-3"><div className="text-xl font-bold text-orange-400">&euro; {(((refInfo.total_cents||0)/100)).toFixed(2)}</div><div className="text-xs text-gray-400">maturato</div></div>
+                </div>
+                <a href={'/segnalatore/' + refInfo.code} target="_blank" rel="noopener noreferrer" className="text-sm text-orange-400 hover:text-orange-300 underline">Apri la tua pagina pubblica condivisibile</a>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-gray-400">Porta un cliente e guadagni <strong className="text-white">2&euro; per ogni mese effettivamente pagato dal cliente</strong>. Richiedi il tuo codice personale: te lo assegniamo noi.</p>
+                <button onClick={requestRefCode} disabled={refReq || refInfo.requested} className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold px-4 py-2 rounded-lg">{refInfo.requested ? 'Richiesta inviata' : (refReq ? 'Invio...' : 'Richiedi il tuo codice')}</button>
+              </>
+            )}
+          </div>
+        )}
           <p className="text-dark-200 text-sm mt-1">{en ? 'Manage your profile and data' : 'Gestisci il tuo profilo e i tuoi dati'}</p>
         </div>
 
