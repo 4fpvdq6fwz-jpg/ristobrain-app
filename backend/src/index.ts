@@ -19,6 +19,7 @@ import billingRouter, { stripeWebhookHandler } from './routes/billing';
 import menuEngineRouter from './routes/menuEngine';
 import adminRouter from './routes/admin';
 import kbUploadRouter from './routes/kbUpload';
+import referralRouter from './routes/referral';
 import teamRouter from './routes/team';
 
 const app = express();
@@ -55,6 +56,7 @@ app.use('/api/billing', billingRouter);
 app.use('/api/creativita', menuEngineRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/kb', kbUploadRouter);
+app.use('/api/referral', referralRouter);
 app.use('/api/team', teamRouter);
 
 // 404 and error handlers
