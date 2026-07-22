@@ -12,10 +12,11 @@ export default function AdminPage() {
   const [planValue, setPlanValue] = useState('business');
   const [planSaving, setPlanSaving] = useState(false);
   const [refCodes, setRefCodes] = useState<any[]>([]);
-  const [refForm, setRefForm] = useState({ code: '', referrerName: '', amount: '2' });
+  const [refForm, setRefForm] = useState({ code: '', referrerName: '', amount: '2', ownerEmail: '' });
   const [refSaving, setRefSaving] = useState(false);
+  const [refRequests, setRefRequests] = useState<any[]>([]);
   const loadReferrals = async () => {
-    try { const { data } = await adminApi.getReferralCodes(); setRefCodes(data.codes || []); } catch (e) { /* noop */ }
+    try { const { data } = await adminApi.getReferralCodes(); setRefCodes(data.codes || []); try { const rq = await adminApi.getReferralRequests(); setRefRequests(rq.data.requests || []); } catch (e2) {} } catch (e) { /* noop */ }
   };
   useEffect(() => { loadReferrals(); }, []);
   const createCode = async (e: React.FormEvent) => {
@@ -23,9 +24,9 @@ export default function AdminPage() {
     if (!refForm.code || !refForm.referrerName) { toast.error('Inserisci codice e nome segnalatore'); return; }
     setRefSaving(true);
     try {
-      await adminApi.createReferralCode({ code: refForm.code.trim(), referrerName: refForm.referrerName.trim(), amountCents: Math.round(parseFloat(refForm.amount || '2') * 100) });
+      await adminApi.createReferralCode({ code: refForm.code.trim(), referrerName: refForm.referrerName.trim(), amountCents: Math.round(parseFloat(refForm.amount || '2') * 100), ownerEmail: refForm.ownerEmail.trim() });
       toast.success('Codice creato');
-      setRefForm({ code: '', referrerName: '', amount: '2' });
+      setRefForm({ code: '', referrerName: '', amount: '2', ownerEmail: '' });
       loadReferrals();
     } catch (err: any) {
       toast.error(err?.response?.data?.error || 'Errore nella creazione del codice');
@@ -110,9 +111,22 @@ export default function AdminPage() {
         <div className="bg-gray-800 border border-gray-700 rounded-xl p-5 space-y-4 mb-6">
           <div className="flex items-center gap-2 text-white font-semibold"><Gift className="w-5 h-5 text-orange-400" /> Segnalatori (provvigioni)</div>
           <p className="text-sm text-gray-400">Crea un codice per un segnalatore: matura la provvigione per ogni mese in cui un cliente da lui portato resta abbonato.</p>
+          <p className="text-xs text-gray-400 mb-2">I 2&euro; maturano solo quando il cliente segnalato paga effettivamente (per ogni mese pagato). Per assegnare un codice a un utente, inserisci la sua email nel campo proprietario.</p>
+          {refRequests.length > 0 && (
+            <div className="bg-gray-900 border border-orange-500/30 rounded-lg p-3 space-y-2 mb-3">
+              <div className="text-sm text-orange-300 font-medium">Richieste codice ({refRequests.length})</div>
+              {refRequests.map((rq: any) => (
+                <div key={rq.id} className="flex items-center justify-between text-sm">
+                  <span className="text-gray-300">{rq.full_name || 'Utente'} &mdash; {rq.email}</span>
+                  <button type="button" onClick={() => setRefForm({ ...refForm, ownerEmail: rq.email })} className="text-orange-400 hover:text-orange-300">Assegna</button>
+                </div>
+              ))}
+            </div>
+          )}
           <form onSubmit={createCode} className="grid grid-cols-1 md:grid-cols-4 gap-3">
             <input className="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white" placeholder="Codice (es. MARIO2)" value={refForm.code} onChange={(e) => setRefForm({ ...refForm, code: e.target.value })} />
-            <input className="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white md:col-span-2" placeholder="Nome segnalatore" value={refForm.referrerName} onChange={(e) => setRefForm({ ...refForm, referrerName: e.target.value })} />
+            <input className="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white" placeholder="Nome segnalatore" value={refForm.referrerName} onChange={(e) => setRefForm({ ...refForm, referrerName: e.target.value })} />
+            <input className="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white" placeholder="Email utente (proprietario)" value={refForm.ownerEmail} onChange={(e) => setRefForm({ ...refForm, ownerEmail: e.target.value })} />
             <div className="flex gap-2">
               <input className="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white w-24" placeholder="euro/mese" value={refForm.amount} onChange={(e) => setRefForm({ ...refForm, amount: e.target.value })} />
               <button type="submit" disabled={refSaving} className="bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold px-4 py-2 rounded-lg flex-1">Crea</button>
