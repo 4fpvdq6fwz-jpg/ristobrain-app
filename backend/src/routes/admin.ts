@@ -69,7 +69,14 @@ router.post('/referral-codes', authenticate, async (req: Request, res: Response)
     const amt = Number.isFinite(Number(amountCents)) && Number(amountCents) > 0 ? Math.round(Number(amountCents)) : 200;
     const exists = await queryOne<any>('SELECT code FROM referral_codes WHERE LOWER(code) = LOWER($1)', [cleanCode]);
     if (exists) return res.status(409).json({ error: 'Codice gia esistente' });
-    await query('INSERT INTO referral_codes (code, referrer_name, amount_cents) VALUES ($1, $2, $3)', [cleanCode, String(referrerName).trim(), amt]);
+    const ownerEmail = (req.body && req.body.ownerEmail) ? String(req.body.ownerEmail).trim().toLowerCase() : '';
+        let ownerId: string | null = null;
+        if (ownerEmail) {
+          const ou = await queryOne<any>('SELECT id FROM users WHERE LOWER(email) = $1 AND deleted_at IS NULL', [ownerEmail]);
+          if (ou) ownerId = ou.id;
+        }
+        await query('INSERT INTO referral_codes (code, referrer_name, amount_cents, owner_user_id) VALUES ($1, $2, $3, $4)', [cleanCode, String(referrerName).trim(), amt, ownerId]);
+        if (ownerId) { try { await query("UPDATE referral_requests SET status = 'handled' WHERE user_id = $1 AND status = 'pending'", [ownerId]); } catch (e) {} }
     return res.status(201).json({ code: cleanCode, referrer_name: String(referrerName).trim(), amount_cents: amt });
   } catch (err) {
     console.error('Admin referral create error:', err);
@@ -87,6 +94,18 @@ router.post('/referral-codes/toggle', authenticate, async (req: Request, res: Re
     return res.json({ ok: true });
   } catch (err) {
     console.error('Admin referral toggle error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/admin/referral-requests — richieste di codice in attesa
+router.get('/referral-requests', authenticate, async (req: Request, res: Response) => {
+  try {
+    if (!isMaster(req)) return res.status(403).json({ error: 'Accesso riservato' });
+    const rows = await query<any>("SELECT rr.id, rr.user_id, rr.email, rr.full_name, rr.created_at FROM referral_requests rr WHERE rr.status = 'pending' ORDER BY rr.created_at ASC");
+    return res.json({ requests: rows });
+  } catch (err) {
+    console.error('Admin referral-requests error:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
