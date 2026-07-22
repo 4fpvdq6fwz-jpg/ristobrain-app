@@ -54,6 +54,7 @@ export const adminApi = {
   getReferralCodes: () => api.get('/admin/referral-codes'),
   createReferralCode: (data: { code: string; referrerName: string; amountCents?: number; ownerEmail?: string }) => api.post('/admin/referral-codes', data),
   toggleReferralCode: (data: { code: string; active: boolean }) => api.post('/admin/referral-codes/toggle', data),
+  getReferralRequests: () => api.get('/admin/referral-requests'),
   setPlan: (data: { email?: string; userId?: string; plan: string }) => api.post('/admin/set-plan', data),
   stats: () => api.get('/auth/admin/stats'),
   deleteAccount: (userId: string) => api.post('/auth/admin/delete-account', { userId }),
