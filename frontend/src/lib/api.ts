@@ -52,7 +52,7 @@ export const authApi = {
 // Admin (riservato master)
 export const adminApi = {
   getReferralCodes: () => api.get('/admin/referral-codes'),
-  createReferralCode: (data: { code: string; referrerName: string; amountCents?: number }) => api.post('/admin/referral-codes', data),
+  createReferralCode: (data: { code: string; referrerName: string; amountCents?: number; ownerEmail?: string }) => api.post('/admin/referral-codes', data),
   toggleReferralCode: (data: { code: string; active: boolean }) => api.post('/admin/referral-codes/toggle', data),
   setPlan: (data: { email?: string; userId?: string; plan: string }) => api.post('/admin/set-plan', data),
   stats: () => api.get('/auth/admin/stats'),
@@ -60,6 +60,12 @@ export const adminApi = {
 };
 
 // Billing
+export const referralApi = {
+  me: () => api.get('/referral/me'),
+  request: () => api.post('/referral/request'),
+  publicStatus: (code: string) => api.get('/referral/public/' + encodeURIComponent(code)),
+};
+
 export const teamApi = {
   getMembers: () => api.get('/team/members'),
   addMember: (data: { email: string; password: string; fullName: string; role?: string }) => api.post('/team/members', data),
