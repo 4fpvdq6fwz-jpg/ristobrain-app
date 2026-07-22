@@ -9,11 +9,11 @@ export default function LoginPage() {
   const [tab, setTab] = useState<'login' | 'register'>('login');
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({ email: '', password: '', fullName: '', workspaceName: '', phone: '' });
+  const [form, setForm] = useState({ email: '', password: '', fullName: '', workspaceName: '', phone: '', referralCode: '' });
 
   const switchTab = (t: 'login' | 'register') => {
     setTab(t);
-    setForm({ email: '', password: '', fullName: '', workspaceName: '', phone: '' });
+    setForm({ email: '', password: '', fullName: '', workspaceName: '', phone: '', referralCode: '' });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
