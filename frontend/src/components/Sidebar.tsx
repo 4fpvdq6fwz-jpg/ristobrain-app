@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Package, BookOpen, UtensilsCrossed,
   TrendingUp, BarChart2, ShoppingCart, LogOut,
   MapPin, Truck, Brain, CreditCard, Settings, X, Bell, PackageX, ShieldAlert, FileText, Users, ChevronDown,
-  Sparkles, ScrollText
+  Sparkles, ScrollText, Calculator
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useLang } from './LanguageProvider';
@@ -47,6 +47,7 @@ const navSections: NavSection[] = [
       { href: '/sales', labelKey: 'nav.sales', icon: ShoppingCart },
       { href: '/engineering', labelKey: 'nav.engineering', icon: BarChart2 },
       { href: '/pricing', labelKey: 'nav.pricing', icon: TrendingUp },
+      { href: '/full-cost', labelKey: 'nav.fullCost', icon: Calculator },
       { href: '/avvisi', labelKey: 'nav.priceAlerts', icon: Bell },
     ],
   },

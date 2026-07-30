@@ -6,7 +6,7 @@ import { BookOpen, FileText, PackageX, Brain, Plus, X } from 'lucide-react';
 import { useLang } from './LanguageProvider';
 
 const actions = [
-  { href: '/recipes', icon: BookOpen, titleKey: 'qa.newRecipe', descKey: 'qa.newRecipeDesc' },
+  { href: '/recipes?new=1', icon: BookOpen, titleKey: 'qa.newRecipe', descKey: 'qa.newRecipeDesc' },
   { href: '/fatture', icon: FileText, titleKey: 'qa.invoice', descKey: 'qa.invoiceDesc' },
   { href: '/scorte', icon: PackageX, titleKey: 'qa.stock', descKey: 'qa.stockDesc' },
   { href: '/ai', icon: Brain, titleKey: 'qa.ai', descKey: 'qa.aiDesc' },
